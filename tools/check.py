@@ -132,6 +132,37 @@ class StrictManifestUses(BaseModel):
     tools: list[str] = []
 
 
+class StrictSubagentOrigin(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    source: str = Field(min_length=1)
+    url: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class StrictSubagentManifest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: KebabStr
+    version: str = Field(pattern=SEMVER_RE)
+    type: Literal["subagent"]
+    description: str = Field(min_length=1)
+    status: Literal["draft", "stable", "deprecated"]
+    tags: list[KebabStr] = []
+    language: Literal["it", "en", "multilingual"]
+    origin: StrictSubagentOrigin
+    entrypoint: str = Field(min_length=1)
+    tools: list[str] = []
+    mcp_servers: list[str] = []
+    skills_dependencies: list[str] = []
+    memory: Optional[Literal["project", "none"]] = None
+    created: Union[date, str]
+    updated: Union[date, str]
+    author: str = Field(min_length=1)
+
+    _validate_created = field_validator("created")(_validate_iso_date)
+    _validate_updated = field_validator("updated")(_validate_iso_date)
+
+
 class StrictManifest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -551,6 +582,64 @@ def check_composite_completeness(root: Path) -> CheckResult:
     return CheckResult("Composite completeness", passed, summary, details)
 
 
+def check_subagent_manifest_schema(root: Path) -> CheckResult:
+    sub_root = root / "subagents"
+    manifests = sorted(sub_root.glob("*/manifest.yaml")) if sub_root.is_dir() else []
+    details: list[str] = []
+    valid = 0
+    for m in manifests:
+        try:
+            raw = yaml.safe_load(m.read_text(encoding="utf-8")) or {}
+            StrictSubagentManifest(**raw)
+            # Folder name must match the declared name
+            folder_name = m.parent.name
+            if raw.get("name") != folder_name:
+                details.append(
+                    f"{_rel(m)}: name {raw.get('name')!r} does not match "
+                    f"folder name {folder_name!r}"
+                )
+                continue
+            valid += 1
+        except ValidationError as exc:
+            details.append(f"{_rel(m)}: {exc.error_count()} schema error(s)")
+            details.extend(_format_validation_error(exc))
+        except Exception as exc:
+            details.append(f"{_rel(m)}: {type(exc).__name__}: {exc}")
+    passed = not details
+    summary = f"{valid}/{len(manifests)} subagent manifest(s) valid"
+    return CheckResult(
+        "Subagent manifest compliance", passed, summary, details
+    )
+
+
+def check_subagent_entrypoint_exists(root: Path) -> CheckResult:
+    sub_root = root / "subagents"
+    manifests = sorted(sub_root.glob("*/manifest.yaml")) if sub_root.is_dir() else []
+    details: list[str] = []
+    checked = 0
+    for m in manifests:
+        try:
+            raw = yaml.safe_load(m.read_text(encoding="utf-8")) or {}
+        except Exception as exc:
+            details.append(f"{_rel(m)}: {type(exc).__name__}: {exc}")
+            continue
+        entry = raw.get("entrypoint")
+        if not isinstance(entry, str) or not entry:
+            # Schema check already flagged this; skip silently here.
+            continue
+        checked += 1
+        target = (m.parent / entry).resolve()
+        if not target.is_file():
+            details.append(
+                f"{_rel(m)}: entrypoint → {entry!r} does not resolve to a file"
+            )
+    passed = not details
+    summary = f"{checked} entrypoint(s) checked"
+    return CheckResult(
+        "Subagent entrypoint exists", passed, summary, details
+    )
+
+
 def check_index_up_to_date(root: Path) -> CheckResult:
     placeholder, _failures = gi._build_placeholder_content(root)
     if not gi.INDEX_PATH.exists():
@@ -578,6 +667,7 @@ _KEBAB = re.compile(KEBAB_RE)
 _SNAKE = re.compile(r"^[a-z0-9]+(_[a-z0-9]+)*$")
 _NAMING_TARGETS = (
     "agents",
+    "subagents",
     "workflows",
     "skills",
     "prompts/library",
@@ -647,6 +737,8 @@ def _run_all(root: Path) -> list[CheckResult]:
         check_broken_references(root),
         check_no_duplicate_atoms(root),
         check_composite_completeness(root),
+        check_subagent_manifest_schema(root),
+        check_subagent_entrypoint_exists(root),
         check_index_up_to_date(root),
         check_naming_conventions(root),
     ]

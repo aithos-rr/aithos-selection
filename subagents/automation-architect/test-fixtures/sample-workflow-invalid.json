@@ -1,0 +1,21 @@
+{
+  "name": "bad-workflow",
+  "nodes": [
+    {
+      "id": "1",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "parameters": {
+        "headerParameters": {
+          "parameters": [
+            {"name": "Authorization", "value": "Bearer sk-abc1234567890123456789012345678901234567890"}
+          ]
+        }
+      }
+    }
+  ],
+  "connections": {},
+  "settings": {}
+}

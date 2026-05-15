@@ -29,6 +29,11 @@ content is unambiguous.
   - `type: stack-note` → `stack-note`
   - `type: skill` → `skill` (also requires a `SKILL.md` filename when
     inside a folder)
+- **Subagent frontmatter.** A `.md` file whose frontmatter contains
+  `name` and `description` *and* at least one of `tools`,
+  `mcpServers`, or `skills` → `subagent`. The filename is typically
+  `<name>.md` (not `SKILL.md`), and the file is the entrypoint of a
+  bundle described in §3.
 - **Markdown without frontmatter, playbook-style.** A `.md` file with
   **no** frontmatter whose body opens with phrasing such as
   "How I use X", "Setting up X", "My X workflow", "Notes on X" → treat as
@@ -69,6 +74,16 @@ A subfolder inside `_inbox/` is treated as a single bundled candidate.
   `skills/<name>/`. Anthropic skill frontmatter is required at the top of
   `SKILL.md`; if missing, generate it from the folder name and the body's
   opening paragraph.
+- The folder contains a single `<name>.md` (matching the folder name)
+  whose frontmatter declares at least one of `tools`, `mcpServers`, or
+  `skills`, and **no** `SKILL.md` or `agent.md` is present → classify as
+  `subagent`. Destination is `subagents/<name>/`. Generate the
+  Aithos-side `manifest.yaml` from the entrypoint frontmatter (see
+  `references/manifest-examples.md`). Supporting files that often
+  accompany a subagent bundle and may be present without changing the
+  classification: `BUILD-BRIEF.md`, `ARCHITECTURE.md`, `PROGRESS.md`,
+  `README.md`, `references/`, `discovery/`, `research/`,
+  `test-fixtures/`.
 - The folder looks like an n8n workflow bundle (a `flow.json` plus a
   `README.md`, no `agent.md` and no `flow.md`) → classify as
   `n8n-workflow`. Destination is `n8n-workflows/<name>/`.

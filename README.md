@@ -23,6 +23,14 @@ yet a full workflow. `agents/` is the main composite folder: each agent is a
 subfolder containing a system prompt (`agent.md`), a dependency manifest
 (`manifest.yaml`), and a `README.md`.
 
+**Subagents.** A fifth layer sitting between composites and recipes.
+`subagents/` holds Claude Code subagents — Anthropic primitives that
+declare their own `tools`, `mcpServers`, and `skills` dependencies, and
+are invoked as slash-commands (`/<name>`) after being deployed under
+`.claude/agents/` in a target project. Each subagent is a self-contained
+folder with an entrypoint `.md` plus an Aithos-side `manifest.yaml` that
+mirrors the entrypoint frontmatter for indexing.
+
 **Recipes.** Orchestrated workflows that solve a complete user-facing task.
 `workflows/` contains Claude/agent-based workflows that may delegate to n8n
 flows. `n8n-workflows/` holds standalone n8n exports that are not part of a
@@ -88,6 +96,7 @@ To browse what already exists, open `INDEX.md` (auto-generated in Phase 3).
 ├── tools/                   # Python scripts, CLI utilities, plugins
 ├── stack/                   # Operational playbooks (one Markdown per tool)
 ├── agents/                  # Agent definitions (system prompt + manifest)
+├── subagents/               # Claude Code subagents (entrypoint + manifest)
 ├── workflows/               # Claude/agent-based workflows
 ├── n8n-workflows/           # Standalone n8n workflow exports
 ├── references/              # Curated bookmarks to external resources
