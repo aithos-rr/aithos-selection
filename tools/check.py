@@ -221,26 +221,42 @@ def check_manifest_schema(root: Path) -> CheckResult:
 
 
 def check_frontmatter_schema(root: Path) -> CheckResult:
-    targets: list[tuple[Path, str]] = []
-    for p in sorted((root / "prompts" / "library").glob("*.md")):
-        if p.name == "README.md":
-            continue
-        targets.append((p, "atom"))
+    targets: list[tuple[Path, str, Optional[str]]] = []
+    lib = root / "prompts" / "library"
+    if lib.is_dir():
+        for p in sorted(lib.glob("*.md")):
+            if p.name == "README.md":
+                continue
+            targets.append((p, "atom", None))
+        # Folder-as-prompt: each subdir must contain README.md whose
+        # frontmatter id matches the folder name.
+        for d in sorted(p for p in lib.iterdir() if p.is_dir()):
+            readme = d / "README.md"
+            if not readme.is_file():
+                # Flagged separately so the message is clear.
+                targets.append((d, "folder-prompt-missing", d.name))
+                continue
+            targets.append((readme, "folder-prompt", d.name))
     for p in sorted((root / "prompts" / "templates").glob("*.md")):
         if p.name == "README.md":
             continue
-        targets.append((p, "atom"))
+        targets.append((p, "atom", None))
     for p in sorted((root / "stack").glob("*.md")):
         if p.name == "README.md":
             continue
-        targets.append((p, "atom"))
+        targets.append((p, "atom", None))
     for p in sorted((root / "skills").glob("*/SKILL.md")):
-        targets.append((p, "skill"))
+        targets.append((p, "skill", None))
 
     details: list[str] = []
     valid = 0
-    for p, kind in targets:
+    for p, kind, expected_id in targets:
         try:
+            if kind == "folder-prompt-missing":
+                details.append(
+                    f"{_rel(p)}: folder prompt is missing README.md"
+                )
+                continue
             fm = gi._read_frontmatter(p)
             if fm is None:
                 details.append(f"{_rel(p)}: no frontmatter block")
@@ -249,6 +265,13 @@ def check_frontmatter_schema(root: Path) -> CheckResult:
                 gi.SkillFrontmatter(**fm)
             else:
                 StrictAtomFrontmatter(**fm)
+                if kind == "folder-prompt" and fm.get("id") != expected_id:
+                    details.append(
+                        f"{_rel(p)}: frontmatter id "
+                        f"{fm.get('id')!r} does not match folder "
+                        f"name {expected_id!r}"
+                    )
+                    continue
             valid += 1
         except ValidationError as exc:
             details.append(f"{_rel(p)}: {exc.error_count()} schema error(s)")
@@ -415,23 +438,34 @@ def check_no_duplicate_atoms(root: Path) -> CheckResult:
         root / "prompts" / "templates",
         root / "stack",
     ]
+    candidate_files: list[Path] = []
     for d in md_globs:
         if not d.is_dir():
             continue
         for p in sorted(d.glob("*.md")):
             if p.name == "README.md":
                 continue
-            text = p.read_text(encoding="utf-8")
-            m = gi.FRONTMATTER_RE.match(text)
-            if not m:
-                continue
-            body = text[m.end():]
-            digest = hashlib.sha256(body.encode("utf-8")).hexdigest()
-            bodies.setdefault(digest, []).append(_rel(p))
-            fm = yaml.safe_load(m.group(1)) or {}
-            atom_id = fm.get("id")
-            if isinstance(atom_id, str):
-                ids.setdefault(atom_id, []).append(_rel(p))
+            candidate_files.append(p)
+    # Folder prompts: include their README.md too so duplicate detection
+    # spans both structural variants.
+    lib = root / "prompts" / "library"
+    if lib.is_dir():
+        for sub in sorted(p for p in lib.iterdir() if p.is_dir()):
+            readme = sub / "README.md"
+            if readme.is_file():
+                candidate_files.append(readme)
+    for p in candidate_files:
+        text = p.read_text(encoding="utf-8")
+        m = gi.FRONTMATTER_RE.match(text)
+        if not m:
+            continue
+        body = text[m.end():]
+        digest = hashlib.sha256(body.encode("utf-8")).hexdigest()
+        bodies.setdefault(digest, []).append(_rel(p))
+        fm = yaml.safe_load(m.group(1)) or {}
+        atom_id = fm.get("id")
+        if isinstance(atom_id, str):
+            ids.setdefault(atom_id, []).append(_rel(p))
 
     # Manifest name collisions (warnings only)
     manifest_names: dict[str, list[str]] = {}

@@ -55,6 +55,29 @@ Steps:
    with `-v2` (or higher) and mark the previous one as
    `status: deprecated`. See the *Updating an existing atom* section below.
 
+### Folder-as-prompt (prompts with companion assets)
+
+When a prompt needs companion assets (an image, a diagram, code samples), use
+the folder form instead of a single Markdown file:
+
+```
+prompts/library/<id>/
+├── README.md          # frontmatter + body, same shape as a single-file prompt
+└── prompt.jpg         # (or any companion files: images, snippets, etc.)
+```
+
+Rules:
+
+- The folder name is the prompt's `id` and must match the `id` field in
+  `README.md` frontmatter.
+- `README.md` carries the same frontmatter schema as a single-file prompt
+  (`type: prompt`, all required fields). Additional files in the folder are
+  not validated.
+- Both the single-file form and the folder form appear identically in
+  `INDEX.md` and are subject to the same duplicate-detection rules.
+- Use the folder form only when the prompt actually depends on a companion
+  asset; otherwise prefer the single-file form.
+
 ## Adding a new MCP server config
 
 MCP server configs live in `mcp-servers/` in their native JSON format. The

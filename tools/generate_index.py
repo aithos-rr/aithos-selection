@@ -259,13 +259,17 @@ def discover_atoms_with_failures(
                 ParseFailure(_rel(p), f"{type(exc).__name__}: {exc}")
             )
 
-    # prompts/library/*.md
+    # prompts/library/*.md (single-file) and prompts/library/*/README.md (folder-as-prompt)
     lib = root / "prompts" / "library"
     if lib.is_dir():
         for p in sorted(lib.glob("*.md")):
             if p.name == "README.md":
                 continue
             _push_frontmatter_atom(p, "prompt")
+        for d in sorted(p for p in lib.iterdir() if p.is_dir()):
+            readme = d / "README.md"
+            if readme.is_file():
+                _push_frontmatter_atom(readme, "prompt")
 
     # prompts/templates/*.md
     tpl = root / "prompts" / "templates"
