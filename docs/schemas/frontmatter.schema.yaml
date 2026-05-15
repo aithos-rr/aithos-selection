@@ -1,0 +1,97 @@
+$schema: http://json-schema.org/draft-07/schema#
+$id: https://aithos.local/schemas/frontmatter.schema.yaml
+title: Aithos Selection — Markdown Frontmatter
+description: |
+  Schema for the YAML frontmatter block at the top of Markdown content files
+  in `prompts/**/*.md`, `stack/*.md`, and similar atoms. Implements PRD
+  section 5.2.
+
+  Note: `skills/**/SKILL.md` files follow the stricter Anthropic skill
+  frontmatter format and are validated separately, not by this schema.
+
+type: object
+additionalProperties: false
+
+required:
+  - id
+  - name
+  - type
+  - status
+  - version
+  - description
+  - tags
+  - language
+  - created
+  - updated
+  - author
+
+properties:
+  id:
+    type: string
+    description: unique identifier within the folder, kebab-case
+    pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
+
+  name:
+    type: string
+    description: human-readable title
+    minLength: 1
+
+  type:
+    type: string
+    enum:
+      - prompt
+      - template
+      - stack-note
+      - skill
+
+  status:
+    type: string
+    enum:
+      - draft
+      - stable
+      - deprecated
+
+  version:
+    type: string
+    description: semantic version, e.g. "1.0.0"
+    pattern: "^[0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?$"
+
+  description:
+    type: string
+    description: one-line summary
+    minLength: 1
+
+  tags:
+    type: array
+    description: lowercase, kebab-case tags
+    items:
+      type: string
+      pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
+
+  language:
+    type: string
+    enum:
+      - it
+      - en
+      - multilingual
+
+  model:
+    type: string
+    description: optional model hint, e.g. "claude-sonnet-4"
+
+  created:
+    type: string
+    description: ISO 8601 calendar date, YYYY-MM-DD
+    format: date
+    pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+
+  updated:
+    type: string
+    description: ISO 8601 calendar date, YYYY-MM-DD
+    format: date
+    pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+
+  author:
+    type: string
+    description: author handle, default "riccardo"
+    minLength: 1

@@ -1,0 +1,130 @@
+$schema: http://json-schema.org/draft-07/schema#
+$id: https://aithos.local/schemas/manifest.schema.yaml
+title: Aithos Selection — Manifest
+description: |
+  Schema for `manifest.yaml` files inside `agents/<name>/` and
+  `workflows/<name>/`. Implements PRD section 5.1.
+
+type: object
+additionalProperties: false
+
+required:
+  - name
+  - version
+  - type
+  - description
+  - status
+  - tags
+  - created
+  - updated
+
+properties:
+  name:
+    type: string
+    description: kebab-case identifier, must match the parent folder name
+    pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
+
+  version:
+    type: string
+    description: semantic version, e.g. "0.1.0"
+    pattern: "^[0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?$"
+
+  type:
+    type: string
+    enum:
+      - agent
+      - workflow
+
+  description:
+    type: string
+    description: one-line summary of the composite or recipe
+    minLength: 1
+
+  status:
+    type: string
+    enum:
+      - draft
+      - stable
+      - deprecated
+
+  tags:
+    type: array
+    description: lowercase, kebab-case tags
+    items:
+      type: string
+      pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
+
+  created:
+    type: string
+    description: ISO 8601 calendar date, YYYY-MM-DD
+    format: date
+    pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+
+  updated:
+    type: string
+    description: ISO 8601 calendar date, YYYY-MM-DD
+    format: date
+    pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+
+  system_prompt:
+    type: string
+    description: |
+      Relative path to the agent's system prompt Markdown file. Required when
+      `type` is `agent`.
+
+  uses:
+    type: object
+    description: optional dependency declarations; all paths relative to repo root
+    additionalProperties: false
+    properties:
+      prompts:
+        type: array
+        items:
+          type: string
+      templates:
+        type: array
+        items:
+          type: string
+      mcp_servers:
+        type: array
+        items:
+          type: string
+      tools:
+        type: array
+        items:
+          type: string
+
+  agents:
+    type: array
+    description: |
+      Composite agents this workflow orchestrates. Required when `type` is
+      `workflow`. Paths relative to repo root.
+    items:
+      type: string
+
+  n8n_workflows:
+    type: array
+    description: |
+      Optional n8n workflow references. Paths relative to repo root.
+    items:
+      type: string
+
+allOf:
+  - if:
+      properties:
+        type:
+          const: agent
+    then:
+      required:
+        - system_prompt
+
+  - if:
+      properties:
+        type:
+          const: workflow
+    then:
+      required:
+        - agents
+      properties:
+        agents:
+          minItems: 1
