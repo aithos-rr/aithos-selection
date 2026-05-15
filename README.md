@@ -28,6 +28,14 @@ subfolder containing a system prompt (`agent.md`), a dependency manifest
 flows. `n8n-workflows/` holds standalone n8n exports that are not part of a
 Claude-orchestrated recipe.
 
+**References.** A fourth category, distinct from the three above. Atoms,
+composites, and recipes are content the repo *contains*; references are
+content the repo *points to*. `references/` holds curated bookmarks —
+GitHub repos in `repos/`, blog posts and papers in `articles/`, and
+external workflow or skill templates in `templates/`. References are
+never declared as `uses:` dependencies by composites or recipes; they
+are pure curation.
+
 Atoms are referenced by composites and recipes through `manifest.yaml`, never
 by copying. See `PRD.md` for the strategic rationale and `CLAUDE.md` for the
 invariants every contributor (human or AI) must follow.
@@ -82,5 +90,9 @@ To browse what already exists, open `INDEX.md` (auto-generated in Phase 3).
 ├── agents/                  # Agent definitions (system prompt + manifest)
 ├── workflows/               # Claude/agent-based workflows
 ├── n8n-workflows/           # Standalone n8n workflow exports
+├── references/              # Curated bookmarks to external resources
+│   ├── repos/               # GitHub repositories
+│   ├── articles/            # Blog posts, papers, documentation pages
+│   └── templates/           # External n8n / skill / agent templates
 └── tasks/                   # Phase specs for the bootstrap process
 ```

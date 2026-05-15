@@ -110,3 +110,41 @@ If no rule matches at all, classify as `unknown`. Keep the file in
 `_inbox/`, include it in the plan with a short explanation of why it is
 ambiguous, and ask the user to provide a category before the next inbox
 processing run.
+
+## 7. URL pattern rules — `process-reference`
+
+These rules apply to the `process-reference` sub-flow in `SKILL.md`
+section 4. They classify a URL into one of the three reference
+subtypes (`repo`, `article`, `template`) before any metadata fetch.
+Apply in order; stop at the first match.
+
+- **`repo`.** The URL matches
+  `^https?://github\.com/<owner>/<repo>/?$` with no further path
+  segments. The path may end with a trailing slash but must not contain
+  `/issues`, `/pulls`, `/blob/…`, `/tree/…`, or other deep paths.
+  Destination: `references/repos/<owner>-<repo>.md`.
+- **`template`.** The URL matches any of the following template-hosting
+  patterns:
+  - `^https?://n8n\.io/workflows/…` — an n8n workflow template page.
+  - `^https?://gist\.github\.com/…` — *only when* the gist body is
+    visibly a skill/agent/workflow template (frontmatter present,
+    `{{variables}}` present, or filename ends in `SKILL.md` /
+    `manifest.yaml`). Otherwise treat the gist as `article`.
+  - Other URLs the user explicitly flags as a template
+    (e.g. "this is a template" alongside the link).
+  Destination: `references/templates/<slug>.md`.
+- **`article`.** Anything else with a valid `http://` or `https://`
+  scheme. Destination: `references/articles/<slug>.md`.
+
+The `<slug>` for `article` and `template` is a kebab-case slug of the
+fetched HTML `<title>` (lowercased, punctuation stripped, capped at
+roughly 50 characters). If the title cannot be fetched, fall back to
+the last meaningful path segment of the URL.
+
+When the same destination identifier already exists, append a `-v2`
+(or higher) suffix and surface the collision in the plan. Never
+overwrite an existing reference file.
+
+Anything that is not a well-formed `http(s)://` URL is dropped from
+the plan and reported in the closing summary; it never becomes a
+reference file.

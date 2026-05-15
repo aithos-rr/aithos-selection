@@ -65,6 +65,34 @@ class SkillFrontmatter(_StrictModel):
     description: str
 
 
+class ReferenceFrontmatter(BaseModel):
+    """Reference frontmatter — mirrors docs/schemas/reference.schema.yaml.
+
+    Kept lenient (no regex / enum constraints) so discovery stays robust
+    on mid-edit files. Strict validation lives in ``tools/check.py``.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+    id: str
+    name: str
+    type: str
+    subtype: str
+    url: str
+    status: str
+    description: str
+    tags: list[str] = []
+    language: str
+    created: Union[date, str]
+    updated: Union[date, str]
+    author: str
+    github_owner: Optional[str] = None
+    github_repo: Optional[str] = None
+    github_stars: Optional[int] = None
+    github_language: Optional[str] = None
+    github_topics: list[str] = []
+    github_last_commit: Optional[Union[date, str]] = None
+
+
 class ManifestUses(_StrictModel):
     prompts: list[str] = []
     templates: list[str] = []
@@ -131,6 +159,18 @@ class Recipe:
     uses_mcp: list[str] = field(default_factory=list)
     uses_tools: list[str] = field(default_factory=list)
     n8n_workflows: list[str] = field(default_factory=list)
+
+
+@dataclass
+class Reference:
+    subtype: str
+    path: str
+    name: str
+    url: str
+    status: str
+    tags: list[str]
+    description: str
+    id: str
 
 
 @dataclass
@@ -453,6 +493,79 @@ def discover_recipes_with_failures(
     return out, failures
 
 
+_REFERENCE_SUBTYPES = ("repo", "article", "template")
+_REFERENCE_SUBTYPE_FROM_FOLDER = {
+    "repos": "repo",
+    "articles": "article",
+    "templates": "template",
+}
+
+
+def discover_references(root: Path) -> dict[str, list[Reference]]:
+    """Discover all reference Markdown files grouped by subtype.
+
+    Walks ``references/<subtype-folder>/*.md`` (skipping README.md). The
+    result is keyed by subtype (``repo``, ``article``, ``template``).
+    Files that fail to parse are silently skipped here; use
+    :func:`discover_references_with_failures` when you need the failure
+    list (e.g. inside ``check.py``).
+    """
+    refs, _ = discover_references_with_failures(root)
+    return refs
+
+
+def discover_references_with_failures(
+    root: Path,
+) -> tuple[dict[str, list[Reference]], list[ParseFailure]]:
+    failures: list[ParseFailure] = []
+    out: dict[str, list[Reference]] = {k: [] for k in _REFERENCE_SUBTYPES}
+    refs_root = root / "references"
+    if not refs_root.is_dir():
+        return out, failures
+
+    for folder_name, subtype in _REFERENCE_SUBTYPE_FROM_FOLDER.items():
+        sub = refs_root / folder_name
+        if not sub.is_dir():
+            continue
+        for p in sorted(sub.glob("*.md")):
+            if p.name == "README.md":
+                continue
+            try:
+                fm = _read_frontmatter(p)
+                if fm is None:
+                    failures.append(
+                        ParseFailure(_rel(p), "no frontmatter block")
+                    )
+                    continue
+                data = ReferenceFrontmatter(**fm)
+                out[subtype].append(
+                    Reference(
+                        subtype=data.subtype,
+                        path=_rel(p),
+                        name=data.name,
+                        url=data.url,
+                        status=data.status,
+                        tags=list(data.tags),
+                        description=data.description,
+                        id=data.id,
+                    )
+                )
+            except ValidationError as exc:
+                failures.append(
+                    ParseFailure(
+                        _rel(p), f"schema: {exc.error_count()} error(s)"
+                    )
+                )
+            except Exception as exc:  # pragma: no cover — defensive
+                failures.append(
+                    ParseFailure(_rel(p), f"{type(exc).__name__}: {exc}")
+                )
+
+    for subtype in out:
+        out[subtype].sort(key=lambda r: (r.id, r.path))
+    return out, failures
+
+
 def build_inverse_graph(
     atoms: dict[str, list[Atom]],
     composites: list[Composite],
@@ -532,6 +645,7 @@ def render_index(
     recipes: list[Recipe],
     graph: dict[str, list[str]],
     timestamp: str,
+    references: Optional[dict[str, list[Reference]]] = None,
 ) -> str:
     """Render the full INDEX.md contents (including the given timestamp)."""
     parts: list[str] = []
@@ -678,6 +792,53 @@ def render_index(
     )
     parts.append("")
 
+    # ---- References ----
+    refs = references or {k: [] for k in _REFERENCE_SUBTYPES}
+    parts.append("## References")
+    parts.append("")
+
+    def _reference_rows(subtype: str) -> list[list[str]]:
+        return [
+            [
+                r.id,
+                r.url,
+                r.status,
+                ", ".join(r.tags),
+                _trunc(r.description),
+            ]
+            for r in refs.get(subtype, [])
+        ]
+
+    parts.append("### Repos")
+    parts.append("")
+    parts.append(
+        _table(
+            ["Name", "URL", "Status", "Tags", "Description"],
+            _reference_rows("repo"),
+        )
+    )
+    parts.append("")
+
+    parts.append("### Articles")
+    parts.append("")
+    parts.append(
+        _table(
+            ["Name", "URL", "Status", "Tags", "Description"],
+            _reference_rows("article"),
+        )
+    )
+    parts.append("")
+
+    parts.append("### Templates")
+    parts.append("")
+    parts.append(
+        _table(
+            ["Name", "URL", "Status", "Tags", "Description"],
+            _reference_rows("template"),
+        )
+    )
+    parts.append("")
+
     # ---- Inverse graph ----
     parts.append("## Inverse dependency graph")
     parts.append("")
@@ -737,11 +898,17 @@ def _build_placeholder_content(
     atoms, fa = discover_atoms_with_failures(root)
     composites, fc = discover_composites_with_failures(root)
     recipes, fr = discover_recipes_with_failures(root)
+    references, fref = discover_references_with_failures(root)
     graph = build_inverse_graph(atoms, composites, recipes)
     content = render_index(
-        atoms, composites, recipes, graph, TIMESTAMP_PLACEHOLDER
+        atoms,
+        composites,
+        recipes,
+        graph,
+        TIMESTAMP_PLACEHOLDER,
+        references=references,
     )
-    return content, fa + fc + fr
+    return content, fa + fc + fr + fref
 
 
 def _resolve_timestamp(placeholder_content: str, existing_path: Path) -> str:

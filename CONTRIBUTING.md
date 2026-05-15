@@ -187,6 +187,124 @@ n8n_workflows:
 Pure n8n flows that are not orchestrated by Claude live directly in
 `n8n-workflows/` instead.
 
+## Adding a reference
+
+References are structured bookmarks for external resources the repository
+wants to remember but not ingest — GitHub repositories, blog posts and
+papers, workflow or skill templates found online. They are a fourth
+category alongside atoms, composites, and recipes: composites and
+recipes never declare a reference under `uses:`. References are pure
+curation.
+
+The three subtypes and where to put each:
+
+| Subtype    | Folder                    | When to use                                                  |
+|------------|---------------------------|--------------------------------------------------------------|
+| `repo`     | `references/repos/`       | GitHub (or other code-host) repositories you want to track.  |
+| `article`  | `references/articles/`    | Blog posts, papers, documentation pages, tweets.             |
+| `template` | `references/templates/`   | n8n workflow templates, skill or agent templates from gists. |
+
+Required frontmatter (validated by
+[`docs/schemas/reference.schema.yaml`](./docs/schemas/reference.schema.yaml)):
+
+```yaml
+---
+id: example-anthropic-sdk-python      # kebab-case, unique in the subfolder
+name: Anthropic SDK Python            # human-readable title
+type: reference                       # always this literal
+subtype: repo                         # repo | article | template
+url: https://github.com/anthropics/anthropic-sdk-python
+status: active                        # active | archived | broken
+description: Official Python SDK for the Anthropic API
+tags: [example, canonical, anthropic, sdk, python]
+language: en                          # it | en | multilingual
+created: 2026-05-15
+updated: 2026-05-15
+author: riccardo
+---
+```
+
+For `subtype: repo` you may add the optional GitHub snapshot fields
+`github_owner`, `github_repo`, `github_stars`, `github_language`,
+`github_topics`, `github_last_commit`. They are a snapshot taken at
+import time — not kept live.
+
+Example frontmatter for an article:
+
+```yaml
+---
+id: anthropic-engineering-skills
+name: Equipping Agents for the Real World with Agent Skills
+type: reference
+subtype: article
+url: https://www.anthropic.com/engineering/agent-skills
+status: active
+description: How Anthropic designs skills as a primitive for Claude agents
+tags: [analysis, anthropic-skill, general, english]
+language: en
+created: 2026-05-15
+updated: 2026-05-15
+author: riccardo
+---
+```
+
+Example frontmatter for a template:
+
+```yaml
+---
+id: n8n-rag-starter
+name: RAG Starter Template
+type: reference
+subtype: template
+url: https://n8n.io/workflows/2345-rag-starter
+status: active
+description: An n8n workflow template wiring up a basic RAG pipeline
+tags: [automation, n8n-template, general, english]
+language: en
+created: 2026-05-15
+updated: 2026-05-15
+author: riccardo
+---
+```
+
+The body of every reference file follows a short, fixed template:
+
+```markdown
+---
+<frontmatter>
+---
+
+# <Name>
+
+[<short link text>](<url>)
+
+## Why this is interesting
+
+<Your notes on why this resource was bookmarked. Free-form Markdown.
+May be left empty when initially imported in batch.>
+
+## Notes
+
+<Optional additional context, related resources, caveats. Omit when
+not needed.>
+```
+
+The body stays short by design — references point *outward*. The value
+is the URL plus your curation note, not duplicated content.
+
+The constraint `subtype` must equal the parent folder's reference type
+(`repo`/`article`/`template`) is enforced by `tools/check.py`. Misplacing
+a file in the wrong subfolder fails the validator.
+
+**Preferred path: bulk import.** Use the `librarian` skill's
+`process-reference` sub-flow instead of hand-rolling references. The
+skill accepts three input modes — a single URL, a Markdown list of URLs
+(typically `_inbox/links-dump.md`), or a full GitHub stars import via
+`import my GitHub stars`. It proposes paths, frontmatter, and tags as a
+plan, and only writes files after your explicit approval. Hand-rolling
+is fine for one-offs, but a batch is faster and more consistent through
+the skill.
+
 ## Using the inbox
 
 `_inbox/` is the quick-dump zone for content you have not yet classified.

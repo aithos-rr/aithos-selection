@@ -90,6 +90,40 @@ class StrictAtomFrontmatter(BaseModel):
     _validate_updated = field_validator("updated")(_validate_iso_date)
 
 
+URL_RE = r"^https?://"
+
+
+class StrictReferenceFrontmatter(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: KebabStr
+    name: str = Field(min_length=1)
+    type: Literal["reference"]
+    subtype: Literal["repo", "article", "template"]
+    url: str = Field(pattern=URL_RE)
+    status: Literal["active", "archived", "broken"]
+    description: str = Field(min_length=1)
+    tags: list[KebabStr] = []
+    language: Literal["it", "en", "multilingual"]
+    created: Union[date, str]
+    updated: Union[date, str]
+    author: str = Field(min_length=1)
+
+    # Optional GitHub-specific fields (only meaningful when subtype: repo)
+    github_owner: Optional[str] = None
+    github_repo: Optional[str] = None
+    github_stars: Optional[int] = Field(default=None, ge=0)
+    github_language: Optional[str] = None
+    github_topics: list[str] = []
+    github_last_commit: Optional[Union[date, str]] = None
+
+    _validate_created = field_validator("created")(_validate_iso_date)
+    _validate_updated = field_validator("updated")(_validate_iso_date)
+    _validate_last_commit = field_validator("github_last_commit")(
+        lambda v: v if v is None else _validate_iso_date(v)
+    )
+
+
 class StrictManifestUses(BaseModel):
     model_config = ConfigDict(extra="forbid")
     prompts: list[str] = []
@@ -225,6 +259,81 @@ def check_frontmatter_schema(root: Path) -> CheckResult:
     summary = f"{valid}/{len(targets)} file(s) valid"
     return CheckResult(
         "Frontmatter schema compliance", passed, summary, details
+    )
+
+
+_REFERENCE_FOLDER_TO_SUBTYPE = {
+    "repos": "repo",
+    "articles": "article",
+    "templates": "template",
+}
+
+
+def _reference_markdown_files(root: Path) -> list[tuple[Path, str]]:
+    """Return ``(path, expected_subtype)`` pairs for every reference file."""
+    out: list[tuple[Path, str]] = []
+    refs_root = root / "references"
+    if not refs_root.is_dir():
+        return out
+    for folder, expected in _REFERENCE_FOLDER_TO_SUBTYPE.items():
+        sub = refs_root / folder
+        if not sub.is_dir():
+            continue
+        for p in sorted(sub.glob("*.md")):
+            if p.name == "README.md":
+                continue
+            out.append((p, expected))
+    return out
+
+
+def check_reference_schema_compliance(root: Path) -> CheckResult:
+    targets = _reference_markdown_files(root)
+    details: list[str] = []
+    valid = 0
+    for p, _expected_subtype in targets:
+        try:
+            fm = gi._read_frontmatter(p)
+            if fm is None:
+                details.append(f"{_rel(p)}: no frontmatter block")
+                continue
+            StrictReferenceFrontmatter(**fm)
+            valid += 1
+        except ValidationError as exc:
+            details.append(f"{_rel(p)}: {exc.error_count()} schema error(s)")
+            details.extend(_format_validation_error(exc))
+        except Exception as exc:
+            details.append(f"{_rel(p)}: {type(exc).__name__}: {exc}")
+    passed = not details
+    summary = f"{valid}/{len(targets)} reference(s) valid"
+    return CheckResult(
+        "Reference schema compliance", passed, summary, details
+    )
+
+
+def check_reference_subtype_folder_match(root: Path) -> CheckResult:
+    targets = _reference_markdown_files(root)
+    details: list[str] = []
+    checked = 0
+    for p, expected_subtype in targets:
+        try:
+            fm = gi._read_frontmatter(p)
+        except Exception as exc:
+            details.append(f"{_rel(p)}: {type(exc).__name__}: {exc}")
+            continue
+        if fm is None:
+            # Already flagged by the schema check; skip silently here.
+            continue
+        checked += 1
+        actual = fm.get("subtype")
+        if actual != expected_subtype:
+            details.append(
+                f"{_rel(p)}: subtype {actual!r} does not match parent "
+                f"folder (expected {expected_subtype!r})"
+            )
+    passed = not details
+    summary = f"{checked} reference(s) checked"
+    return CheckResult(
+        "Reference subtype/folder match", passed, summary, details
     )
 
 
@@ -499,6 +608,8 @@ def _run_all(root: Path) -> list[CheckResult]:
     return [
         check_manifest_schema(root),
         check_frontmatter_schema(root),
+        check_reference_schema_compliance(root),
+        check_reference_subtype_folder_match(root),
         check_broken_references(root),
         check_no_duplicate_atoms(root),
         check_composite_completeness(root),

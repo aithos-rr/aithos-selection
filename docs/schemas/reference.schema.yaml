@@ -1,0 +1,155 @@
+$schema: http://json-schema.org/draft-07/schema#
+$id: https://aithos.local/schemas/reference.schema.yaml
+title: Aithos Selection — Reference Frontmatter
+description: |
+  Schema for the YAML frontmatter block at the top of reference Markdown
+  files in `references/repos/`, `references/articles/`, and
+  `references/templates/`.
+
+  References are structured bookmarks for external resources (GitHub
+  repositories, articles, workflow templates) that the repository points
+  to without ingesting their content. They form a category distinct from
+  atoms, composites, and recipes.
+
+  Subtype/folder coherence: the `subtype` field must match the parent
+  folder name — a file in `references/repos/` must have `subtype: repo`,
+  a file in `references/articles/` must have `subtype: article`, and a
+  file in `references/templates/` must have `subtype: template`. This
+  rule is enforced in `tools/check.py` rather than expressed here, as
+  JSON Schema cannot inspect a file's filesystem location.
+
+  The optional GitHub-specific fields (`github_owner`, `github_repo`,
+  `github_stars`, `github_language`, `github_topics`,
+  `github_last_commit`) are only meaningful when `subtype: repo`.
+
+type: object
+additionalProperties: false
+
+required:
+  - id
+  - name
+  - type
+  - subtype
+  - url
+  - status
+  - description
+  - tags
+  - language
+  - created
+  - updated
+  - author
+
+properties:
+  id:
+    type: string
+    description: unique identifier within the subtype folder, kebab-case
+    pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
+
+  name:
+    type: string
+    description: human-readable title
+    minLength: 1
+
+  type:
+    type: string
+    description: fixed literal — always "reference"
+    enum:
+      - reference
+
+  subtype:
+    type: string
+    description: |
+      Reference subtype. Must match the parent folder name (repo →
+      references/repos/, article → references/articles/, template →
+      references/templates/).
+    enum:
+      - repo
+      - article
+      - template
+
+  url:
+    type: string
+    description: canonical URL of the external resource
+    pattern: "^https?://"
+
+  status:
+    type: string
+    description: |
+      Curation status. `active` is healthy; `archived` means the user
+      no longer recommends it but keeps it for history; `broken` means
+      the URL is dead or the resource is gone.
+    enum:
+      - active
+      - archived
+      - broken
+
+  description:
+    type: string
+    description: one-line summary of the external resource
+    minLength: 1
+
+  tags:
+    type: array
+    description: lowercase, kebab-case tags
+    items:
+      type: string
+      pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
+
+  language:
+    type: string
+    description: language of the external resource
+    enum:
+      - it
+      - en
+      - multilingual
+
+  created:
+    type: string
+    description: ISO 8601 calendar date, YYYY-MM-DD
+    format: date
+    pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+
+  updated:
+    type: string
+    description: ISO 8601 calendar date, YYYY-MM-DD
+    format: date
+    pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+
+  author:
+    type: string
+    description: author handle, default "riccardo"
+    minLength: 1
+
+  # ----- Optional GitHub-specific fields (only when subtype: repo) -----
+
+  github_owner:
+    type: string
+    description: GitHub organisation or user name
+    minLength: 1
+
+  github_repo:
+    type: string
+    description: full `owner/name` form of the GitHub repository
+    minLength: 1
+
+  github_stars:
+    type: integer
+    description: star count at the time of import (snapshot, not live)
+    minimum: 0
+
+  github_language:
+    type: string
+    description: primary language reported by the GitHub API
+    minLength: 1
+
+  github_topics:
+    type: array
+    description: GitHub topics attached to the repository
+    items:
+      type: string
+
+  github_last_commit:
+    type: string
+    description: ISO 8601 date of the last commit (snapshot)
+    format: date
+    pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"

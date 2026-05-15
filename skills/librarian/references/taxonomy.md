@@ -88,7 +88,26 @@ created during Phase 1. Removing or renaming an item that carries the
 `canonical` tag breaks repository validation — do not propose such moves
 without explicit user instruction.
 
-## 6. Adding a new tag
+## 6. Subtype hints — references only
+
+These tags are **optional subtype hints** for items in `references/`.
+They help the user search references by their nature without changing the
+category/domain/language taxonomy above. They never substitute for the
+required category/domain/language tags — they layer on top, just like
+the `example`/`canonical` special tags in section 5.
+
+| Tag                | Meaning                                                  |
+|--------------------|----------------------------------------------------------|
+| `mcp-server`       | The reference points to an MCP server implementation.    |
+| `n8n-template`     | The reference points to a reusable n8n workflow template.|
+| `anthropic-skill`  | The reference points to an Anthropic-format Claude skill.|
+| `developer-tool`   | The reference points to a developer-facing CLI, library, or service. |
+
+Use only when the hint adds genuine signal — do not tag every reference
+with one of these. They are unlocked specifically for the
+`process-reference` sub-flow in `SKILL.md` section 4.
+
+## 7. Adding a new tag
 
 The taxonomy is intentionally closed so that tagging stays useful. New
 tags are not forbidden, but they require explicit user approval.

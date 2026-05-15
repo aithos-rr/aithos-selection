@@ -1,6 +1,6 @@
 ---
 name: librarian
-description: Process _inbox/ items by classifying them and proposing destinations with frontmatter or manifest. Suggest workflows that could integrate a new atom. Propose coherent tags for a file. Use when the user mentions "process inbox", "where does this go", "tag this file", "suggest workflows for", or when files are detected in _inbox/.
+description: Process _inbox/ items by classifying them and proposing destinations with frontmatter or manifest. Bookmark external URLs into references/ (process-reference). Suggest workflows that could integrate a new atom. Propose coherent tags for a file. Use when the user mentions "process inbox", "process this URL", "bookmark this", "import my GitHub stars", "where does this go", "tag this file", "suggest workflows for", or when files are detected in _inbox/.
 ---
 
 # Librarian
@@ -22,13 +22,16 @@ Invoke this skill in any of the following situations:
 - The user types one of the trigger phrases: "process inbox", "process the
   inbox", "process `_inbox/`", "triage inbox", "where does this go", "tag
   this file", "suggest tags", "suggest workflows for `<path>`", "what
-  workflows could use `<path>`".
+  workflows could use `<path>`", "process this URL", "bookmark this",
+  "import my GitHub stars", "process `_inbox/links-dump.md`".
 - The user asks a generic "help me classify/organize/move this" question
   about a file in `_inbox/` or about a new atom.
 - You (Claude Code) detect that `_inbox/` contains files other than
   `.gitkeep` and `README.md` at the start of a session, and the user has not
   yet asked about them — surface the count and offer to run the
   `process-inbox` sub-flow.
+- The user pastes a single URL or a Markdown list of URLs and asks the
+  librarian to bookmark them — run the `process-reference` sub-flow.
 - The user has just added a new atom (prompt, MCP config, tool, stack note,
   skill) and asks which agents or workflows might benefit from it.
 
@@ -130,7 +133,139 @@ Everything currently inside `_inbox/`, recursively. Ignore `.gitkeep` and
 - A proposed destination already exists → never overwrite. Ask the user
   whether to suffix (`-v2`), merge, or skip.
 
-## 4. Sub-flow: `suggest-workflow`
+## 4. Sub-flow: `process-reference`
+
+### Purpose
+
+Bookmark an external URL (or a batch of URLs) as a reference under
+`references/`. References are pure curation — pointers to GitHub repos,
+articles, or workflow templates the user wants to remember without
+ingesting their content. They are *not* dependencies: composites and
+recipes never `use:` a reference.
+
+### Input modes
+
+The sub-flow accepts three input modes, picked from how the user invokes
+the skill:
+
+- **Single URL.** The user passes one URL inline
+  (e.g. "bookmark https://example.com/foo").
+- **List of URLs.** The user passes a Markdown file — by convention
+  `_inbox/links-dump.md` — containing one URL per line. Blank lines and
+  Markdown comments are ignored; lines like `- https://…` or
+  `[label](https://…)` are accepted, the URL is extracted.
+- **GitHub stars bulk.** Triggered by the user phrase "import my GitHub
+  stars" (or a close variant). The skill fetches the complete list via
+  `gh api users/<username>/starred --paginate`. The user must supply
+  their GitHub username on first run.
+
+### Algorithm
+
+For each URL:
+
+1. **Classify subtype.**
+   - URL matches `https://github.com/<owner>/<repo>` with no further path
+     segments → `repo`.
+   - URL matches a known template-hosting pattern — `n8n.io/workflows/…`,
+     a gist whose body looks like a workflow/skill/agent template, or
+     similar — → `template`.
+   - Anything else → `article`.
+2. **Extract metadata.**
+   - For `repo`: call `gh api repos/<owner>/<repo>` and read `name`,
+     `description`, `stargazers_count`, `language`, `topics`, `pushed_at`.
+     Populate the optional GitHub fields in the frontmatter
+     (`github_owner`, `github_repo`, `github_stars`, `github_language`,
+     `github_topics`, `github_last_commit`).
+   - For `article` and `template`: a best-effort web fetch retrieves the
+     page `<title>` and the `meta[name="description"]` content. If the
+     fetch fails (network error, 4xx/5xx, paywall), leave `description`
+     empty and add `flag for user review` next to the row in the plan.
+3. **Generate frontmatter** with the schema-required fields from
+   `/docs/schemas/reference.schema.yaml`: `id`, `name`, `type:
+   reference`, `subtype`, `url`, `status: active`, `description`,
+   `tags`, `language`, `created`, `updated`, `author: riccardo`. Add the
+   optional GitHub fields only when `subtype: repo`.
+4. **Propose destination path:** `references/<subtype>s/<id>.md`.
+   - For `repo`: `<id>` is `<owner>-<repo-name>` (kebab-case).
+   - For `article` and `template`: `<id>` is a slug derived from the
+     page title (lowercase, hyphenated, stripped of punctuation, capped
+     at ~50 characters).
+   - If the destination already exists, suffix with `-v2` (or higher)
+     and surface the collision in the plan.
+5. **Compose body** with the canonical template (frontmatter, the
+   `# <Name>` heading, a Markdown link to the URL, a `## Why this is
+   interesting` section left empty, and an optional `## Notes` section).
+   The "Why this is interesting" block is left blank by default — the
+   user fills it later.
+
+### Output
+
+Present a consolidated plan as a Markdown table, one row per URL:
+
+```
+| # | URL                                | →  | Destination                                | Subtype  | Tags                       |
+|---|------------------------------------|----|--------------------------------------------|----------|----------------------------|
+| 1 | https://github.com/anthropics/sdk  | →  | references/repos/anthropics-sdk.md         | repo     | anthropic, sdk, python     |
+| 2 | https://example.com/blog/post      | →  | references/articles/post.md                | article  | analysis, english          |
+```
+
+Below the table, show the proposed frontmatter for each row in sequence
+so the user can inspect every field before any file is written. Then
+prompt the user verbatim:
+
+> Apply this plan? (yes / no / partial)
+
+Behaviour for each answer mirrors `process-inbox`:
+
+- **yes** — write every file, then commit with
+  `chore(librarian): imported <N> reference(s)`.
+- **partial** — ask the user to list row numbers to apply, then
+  proceed with that subset only.
+- **no** — stop without changes.
+
+#### GitHub stars bulk mode
+
+For `import my GitHub stars`, present the result as a single scrollable
+table the user can review row-by-row. The table has one extra column
+`action` defaulting to `keep`:
+
+```
+| #  | repo                        | stars  | language | action |
+|----|-----------------------------|--------|----------|--------|
+| 1  | anthropics/anthropic-sdk-py | 12 345 | Python   | keep   |
+| 2  | foo/abandoned-project       |    12  | JS       | keep   |
+```
+
+The user changes the `action` cell to `archive` (status will be
+`archived` in the resulting frontmatter) or `delete` (skip — do not
+create a file at all) before approval. Default keeps everything as
+`status: active`.
+
+### Important constraint — no content download
+
+The skill must **not** download the body of any URL. Only metadata is
+allowed:
+
+- HTML `<title>` and `<meta>` tags for `article` and `template`.
+- The GitHub REST API for `repo`.
+
+This keeps the repository free of copyrighted material and keeps the
+operation fast. The URL is the canonical pointer; the curation note is
+the user's contribution. Anything more is out of scope.
+
+### Failure modes to watch
+
+- `gh` not authenticated or rate-limited → ask the user to authenticate
+  (`gh auth login`) and retry; do not silently fall back to scraping.
+- Web fetch returns a non-HTML resource (PDF, image) → leave
+  `description` empty, set the URL as the only signal, and flag the row
+  for user review.
+- A destination identifier collides with an existing reference →
+  suffix with `-v2`; never overwrite.
+- A URL is not a well-formed `http://`/`https://` URL → drop it from
+  the plan and list the offending input in the closing summary.
+
+## 5. Sub-flow: `suggest-workflow`
 
 ### Input
 
@@ -169,7 +304,7 @@ If fewer than three workflows score `≥ 5`, return however many qualify
 (possibly zero) and say so explicitly. Do not pad with low-scoring
 suggestions.
 
-## 5. Sub-flow: `tag`
+## 6. Sub-flow: `tag`
 
 ### Input
 
@@ -212,7 +347,7 @@ Proposed tags for `<path>`:
 The user can then accept the list as-is, drop individual tags, or ask for
 alternatives.
 
-## 6. Output style
+## 7. Output style
 
 The librarian is plan-first and confirmation-driven:
 
@@ -235,7 +370,7 @@ The librarian is plan-first and confirmation-driven:
    the current repository tree. It never touches files outside the project
    root.
 
-## 7. References
+## 8. References
 
 Consult these files in `skills/librarian/references/` whenever the relevant
 information is needed:
@@ -262,6 +397,9 @@ honours:
   — authoritative shape of the frontmatter the librarian generates.
 - [`/docs/schemas/manifest.schema.yaml`](../../docs/schemas/manifest.schema.yaml)
   — authoritative shape of the manifests the librarian generates.
+- [`/docs/schemas/reference.schema.yaml`](../../docs/schemas/reference.schema.yaml)
+  — authoritative shape of reference frontmatter (used by
+  `process-reference`).
 - [`/docs/naming-conventions.md`](../../docs/naming-conventions.md) —
   kebab-case, identifier matching, versioning, and tag rules the librarian
   must obey when proposing paths and identifiers.
