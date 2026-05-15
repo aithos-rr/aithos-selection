@@ -1,0 +1,14 @@
+name: example-echo-agent
+version: 0.1.0
+type: agent
+description: Canonical example agent to validate the manifest schema
+status: stable
+tags: [example, canonical]
+created: 2026-05-15
+updated: 2026-05-15
+
+system_prompt: ./agent.md
+
+uses:
+  prompts:
+    - prompts/library/example-hello-world.md
