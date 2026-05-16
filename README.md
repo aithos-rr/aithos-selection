@@ -93,7 +93,7 @@ To browse what already exists, open `INDEX.md` (auto-generated in Phase 3).
 │   ├── library/             # Finished, versioned prompts
 │   └── templates/           # Parametric templates with {{variables}}
 ├── mcp-servers/             # MCP server configurations (one JSON per server)
-├── tools/                   # Python scripts, CLI utilities, plugins
+├── tools/                   # Python utilities (index generator, validator, install script for deploying skills/subagents)
 ├── stack/                   # Operational playbooks (one Markdown per tool)
 ├── agents/                  # Agent definitions (system prompt + manifest)
 ├── subagents/               # Claude Code subagents (entrypoint + manifest)
