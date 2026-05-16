@@ -1,6 +1,6 @@
 ---
 name: librarian
-description: Process _inbox/ items by classifying them as prompts, skills, agents, subagents, MCP configs, tools, stack notes, or references. Propose destinations with frontmatter or manifest. Bookmark external URLs into references/ (process-reference). Suggest workflows that could integrate a new atom. Propose coherent tags for a file. Use when the user mentions "process inbox", "process this URL", "bookmark this", "import my GitHub stars", "where does this go", "tag this file", "suggest workflows for", or when files are detected in _inbox/.
+description: Process _inbox/ items by classifying them as prompts, skills, agents, subagents, MCP configs, tools, stack notes, or references. Propose destinations with frontmatter or manifest. Bookmark external URLs into references/ (process-reference). Run the auto-pilot evening routine that combines inbox processing and GitHub stars delta-sync into one commit (nightly-sync). Suggest workflows that could integrate a new atom. Propose coherent tags for a file. Use when the user mentions "process inbox", "process this URL", "bookmark this", "import my GitHub stars", "run nightly sync", "evening routine", "where does this go", "tag this file", "suggest workflows for", or when files are detected in _inbox/.
 ---
 
 # Librarian
@@ -23,7 +23,11 @@ Invoke this skill in any of the following situations:
   inbox", "process `_inbox/`", "triage inbox", "where does this go", "tag
   this file", "suggest tags", "suggest workflows for `<path>`", "what
   workflows could use `<path>`", "process this URL", "bookmark this",
-  "import my GitHub stars", "process `_inbox/links-dump.md`".
+  "import my GitHub stars", "process `_inbox/links-dump.md`", "run
+  nightly sync", "nightly sync", "evening sync", "evening routine",
+  "sync everything", "process inbox and sync stars" (Italian:
+  "sync serale", "controlla l'inbox", "fai la routine serale",
+  "sincronizza tutto").
 - The user asks a generic "help me classify/organize/move this" question
   about a file in `_inbox/` or about a new atom.
 - You (Claude Code) detect that `_inbox/` contains files other than
@@ -292,7 +296,176 @@ the user's contribution. Anything more is out of scope.
 - A URL is not a well-formed `http://`/`https://` URL → drop it from
   the plan and list the offending input in the closing summary.
 
-## 5. Sub-flow: `suggest-workflow`
+## 5. Sub-flow: `nightly-sync`
+
+### Purpose
+
+Hands-off evening maintenance for the repository. In one Claude Code
+session, this sub-flow processes everything new in `_inbox/`,
+delta-syncs the user's GitHub stars against `references/repos/`,
+validates the repo, commits the result, and pushes it — leaving the
+working tree clean on the current feature branch.
+
+Unlike `process-inbox` and `process-reference`, this sub-flow is **fully
+auto-pilot within a single session**: it does not present a plan and
+wait for `yes / no / partial` approval. The user reviews the resulting
+single commit afterwards (and can amend or revert if needed). The
+trade-off — less interactive control — is the point: the routine
+should fit between a coffee and an email.
+
+The detailed step-by-step is in
+[`references/nightly-sync-runbook.md`](./references/nightly-sync-runbook.md).
+Consult it before running.
+
+### Trigger phrases
+
+Invoke this sub-flow when the user says any of:
+
+- "run nightly sync"
+- "nightly sync"
+- "process inbox and sync stars"
+- "evening sync"
+- "evening routine"
+- "sync everything"
+- Italian: "sync serale", "controlla l'inbox", "fai la routine
+  serale", "sincronizza tutto"
+
+### Algorithm
+
+Execute these seven steps in order. Each step gracefully handles its
+own "nothing to do" case; the whole sub-flow degrades to "Nothing to
+sync." only when every step is a no-op.
+
+**Step 1 — Pre-flight check.**
+
+- The current branch must NOT be `main`. If it is, print:
+  > nightly-sync requires a feature branch; create one with
+  > `git checkout -b feat/nightly-YYYY-MM-DD` before running.
+  and exit without action.
+- `git status` must be clean (no uncommitted changes, no untracked
+  files outside `_inbox/`). If not, list the offending paths and ask
+  the user to commit or stash first. Exit without action.
+
+**Step 2 — Inbox processing.**
+
+- Reuse the algorithm from §3 (`process-inbox`) and the subagent
+  recognition added in Phase 5.2-bis (see
+  [`classification-heuristics.md`](./classification-heuristics.md) §3).
+- Run in auto-pilot mode: process every classified entry without per-
+  item confirmation. Skip noise files (`.gitkeep`, `README.md`,
+  `*:Zone.Identifier`).
+- If `_inbox/` contains only the scaffolding files, log
+  `Inbox: empty, skipping.` and proceed to Step 3.
+- Keep a sub-report of what was processed (counts by category, list of
+  created paths, list of unhandled entries left in the inbox).
+
+**Step 3 — Stars delta sync.**
+
+- Fetch the user's current stars via:
+  ```
+  gh api users/aithos-rr/starred --paginate
+  ```
+- For every starred repo, compute the canonical id `<owner>-<name>`
+  (kebab-case; lowercase the owner and the repo name; replace any
+  disallowed character with a hyphen).
+- Compare against the file listing of `references/repos/`, excluding
+  the canonical fixture `references/repos/example-anthropic-sdk-python.md`
+  (it is permanent and never touched).
+- Classify each repo:
+  - **New star** (id not present in `references/repos/`): create a new
+    reference file using the same template as Phase 5.1's stars
+    import. Set `status: active`. Derive `description`, `tags`, and
+    `language` once at creation time; the user owns those fields
+    afterwards.
+  - **Existing star** (id already present): compute the diff against
+    the existing frontmatter for the **volatile-only** fields:
+    `github_stars`, `github_last_commit`, `updated`. If any has
+    changed, rewrite **only those fields** in the frontmatter. Never
+    touch `description`, `tags`, `language`, `name`, `status`, the
+    body, or any user-edited content.
+  - **Unstarred** (reference present but no longer in the user's
+    GitHub stars, excluding the canonical fixture): do NOT delete.
+    Flag it in the final report:
+    > Reference `<owner>-<name>` is no longer starred. Consider
+    > archiving by changing `status: active` → `status: archived`, or
+    > delete the file.
+
+**Step 4 — Validate.**
+
+- Regenerate the index: `uv run python tools/generate_index.py`.
+- Run the validator: `uv run python tools/check.py`.
+- If either fails, STOP immediately. Print the failure detail and
+  exit. Do not commit a broken state. Recovery is in the runbook.
+
+**Step 5 — Commit.**
+
+- Stage all changes (`git add .`).
+- If `git diff --cached --quiet` (nothing to commit), print:
+  > Nothing to sync.
+  and exit code 0 without creating a commit.
+- Otherwise, build the commit message:
+  ```
+  chore(nightly-sync): <summary>
+
+  Inbox: <N entries processed>
+  Stars: <X new, Y metadata updates, Z unstarred flags>
+
+  See report in session output for details.
+  ```
+  Where `<summary>` is a short comma-separated list of the non-zero
+  buckets (e.g. `3 inbox, 2 new stars`, `2 inbox`, `1 new star`,
+  `5 metadata updates`).
+
+**Step 6 — Push.**
+
+- `git push`. If the current branch has no upstream, run
+  `git push -u origin <branch>` to set it.
+
+**Step 7 — Final report.**
+
+Print the unified report shape documented in the runbook (the
+`Nightly sync complete (commit <hash>).` block). When the whole run
+was a no-op, print the `Nightly sync: nothing to do.` block instead.
+
+### Important constraints
+
+- **Idempotent.** Re-running `nightly-sync` immediately after a
+  successful run must result in `Nothing to sync.` — no commit, no
+  push.
+- **Safe by default.** The sub-flow never deletes user-edited
+  content. The worst-case outcome on any failure is a printed report
+  and an exit without modifying anything. If Step 4 fails, the
+  changes that Steps 2-3 made on disk are left in place but **not**
+  committed; the user can inspect and fix manually.
+- **Network-aware.** Step 3 requires `gh api`. If the call fails
+  (offline, auth lapsed, rate-limited), Steps 1-2 have already
+  completed. Report partial success in the final report
+  (`Stars sync skipped due to network error; inbox processed
+  normally.`), commit the inbox work alone if there is any, and exit
+  code 0.
+- **Reusable logic.** This sub-flow is an orchestration, not new
+  algorithmic work. Inbox handling reuses §3 verbatim; stars handling
+  reuses §4 (`process-reference`) with the delta-only restrictions
+  documented above. The runbook has the precise pseudocode for the
+  delta loop.
+
+### Failure modes to watch
+
+- **Not on a feature branch** → Step 1 stops the run; instruct the
+  user to create a feature branch first.
+- **Working tree dirty** → Step 1 stops the run; list the offending
+  paths and ask the user to commit or stash.
+- **`gh` not authenticated or rate-limited** → Step 3 is skipped with
+  a warning; Steps 2 and 4-6 still run for inbox-only changes.
+- **Validation fails after the run** → Step 4 stops the run before
+  committing; the user inspects `tools/check.py` output and fixes
+  manually. The disk changes from Steps 2-3 are not committed.
+- **Inbox safety brake triggers** (more than 60 entries, see
+  [`phase-5.2-assets.md`](../../../tasks/phase-5.2-assets.md) safety
+  brakes) → the inbox step aborts with the documented message;
+  nothing is committed.
+
+## 6. Sub-flow: `suggest-workflow`
 
 ### Input
 
@@ -331,7 +504,7 @@ If fewer than three workflows score `≥ 5`, return however many qualify
 (possibly zero) and say so explicitly. Do not pad with low-scoring
 suggestions.
 
-## 6. Sub-flow: `tag`
+## 7. Sub-flow: `tag`
 
 ### Input
 
@@ -374,7 +547,7 @@ Proposed tags for `<path>`:
 The user can then accept the list as-is, drop individual tags, or ask for
 alternatives.
 
-## 7. Output style
+## 8. Output style
 
 The librarian is plan-first and confirmation-driven:
 
@@ -397,7 +570,7 @@ The librarian is plan-first and confirmation-driven:
    the current repository tree. It never touches files outside the project
    root.
 
-## 8. References
+## 9. References
 
 Consult these files in `skills/librarian/references/` whenever the relevant
 information is needed:
@@ -412,7 +585,11 @@ information is needed:
   the rule for proposing new tags.
 - [`classification-heuristics.md`](./references/classification-heuristics.md)
   — the rules that decide whether an inbox item is a prompt, MCP config,
-  stack note, tool, skill, agent, workflow, or `unknown`.
+  stack note, tool, skill, agent, subagent, workflow, or `unknown`.
+- [`nightly-sync-runbook.md`](./references/nightly-sync-runbook.md) —
+  step-by-step pseudocode and constraints for the `nightly-sync`
+  sub-flow (pre-flight, stars delta algorithm, volatile fields, commit
+  conventions, failure modes, recovery).
 
 Repository-wide references (outside this skill) that the librarian also
 honours:
