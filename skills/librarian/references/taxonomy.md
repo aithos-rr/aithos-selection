@@ -96,16 +96,23 @@ category/domain/language taxonomy above. They never substitute for the
 required category/domain/language tags — they layer on top, just like
 the `example`/`canonical` special tags in section 5.
 
-| Tag                | Meaning                                                  |
-|--------------------|----------------------------------------------------------|
-| `mcp-server`       | The reference points to an MCP server implementation.    |
-| `n8n-template`     | The reference points to a reusable n8n workflow template.|
-| `anthropic-skill`  | The reference points to an Anthropic-format Claude skill.|
-| `developer-tool`   | The reference points to a developer-facing CLI, library, or service. |
+| Tag                  | Meaning                                                  |
+|----------------------|----------------------------------------------------------|
+| `mcp-server`         | The reference points to an MCP server implementation.    |
+| `n8n-template`       | The reference points to a reusable n8n workflow template.|
+| `anthropic-skill`    | The reference points to an Anthropic-format Claude skill.|
+| `developer-tool`     | The reference points to a developer-facing CLI, library, or service. |
+| `learnn`             | Material sourced from the Learnn community / course platform. |
+| `community-resource` | Third-party public material curated for future reference. |
 
 Use only when the hint adds genuine signal — do not tag every reference
 with one of these. They are unlocked specifically for the
-`process-reference` sub-flow in `SKILL.md` section 4.
+`process-reference` sub-flow in `SKILL.md` section 4 and for subagent
+bundles in `subagents/` that originate from third-party sources. When
+applied to a subagent, `learnn` and `community-resource` are usually
+combined: `learnn` identifies the specific source; `community-resource`
+identifies that the item is third-party material rather than internally
+authored.
 
 ## 7. Adding a new tag
 

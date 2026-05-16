@@ -1,0 +1,42 @@
+name: seo-strategist
+version: 1.0.0
+type: subagent
+description: "Da audit dominio + obiettivi business a strategia SEO+GEO 2026 actionable (keyword clustering, gap analysis content, schema markup, GEO optimization…"
+status: stable
+tags: [learnn, community-resource, seo, marketing, content-strategy]
+language: it
+
+origin:
+  source: learnn
+  notes: "Public material from Learnn community courses, saved by Riccardo for future work reference."
+
+entrypoint: ./seo-strategist.md
+
+tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - WebFetch
+  - WebSearch
+  - AskUserQuestion
+
+mcp_servers:
+  - parallel-cli
+  - playwright
+  - apify
+  - google-personal
+  - context7
+
+skills_dependencies:
+  - keyword-research
+  - content-audit
+  - geo-optimizer
+  - schema-generator
+  - technical-seo-audit
+
+memory: project
+
+created: 2026-05-16
+updated: 2026-05-16
+author: learnn

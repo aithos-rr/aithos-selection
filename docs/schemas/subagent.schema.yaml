@@ -1,0 +1,136 @@
+$schema: http://json-schema.org/draft-07/schema#
+$id: https://aithos.local/schemas/subagent.schema.yaml
+title: Aithos Selection — Subagent Manifest
+description: |
+  Schema for `manifest.yaml` files inside `subagents/<name>/`. A subagent
+  is a Claude Code primitive: an agent-like prompt with declared `tools`,
+  `mcpServers`, and `skills` dependencies, invoked via slash-command and
+  deployed under `.claude/agents/` in a target project. The Aithos
+  manifest sits alongside the inner subagent file (Anthropic format) and
+  carries the project's curation metadata.
+
+  A subagent folder typically contains the entrypoint .md file plus
+  optional supporting material: `BUILD-BRIEF.md`, `ARCHITECTURE.md`,
+  `PROGRESS.md`, `README.md`, and folders `references/`, `discovery/`,
+  `research/`, `test-fixtures/`. None of these are validated by this
+  schema; they are documented as common conventions.
+
+type: object
+additionalProperties: false
+
+required:
+  - name
+  - version
+  - type
+  - description
+  - status
+  - tags
+  - language
+  - origin
+  - entrypoint
+  - created
+  - updated
+  - author
+
+properties:
+  name:
+    type: string
+    description: kebab-case identifier, must match the parent folder name
+    pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
+
+  version:
+    type: string
+    description: semantic version, e.g. "1.0.0"
+    pattern: "^[0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?$"
+
+  type:
+    type: string
+    enum:
+      - subagent
+
+  description:
+    type: string
+    minLength: 1
+
+  status:
+    type: string
+    enum:
+      - draft
+      - stable
+      - deprecated
+
+  tags:
+    type: array
+    items:
+      type: string
+      pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
+
+  language:
+    type: string
+    enum:
+      - it
+      - en
+      - multilingual
+
+  origin:
+    type: object
+    description: provenance of the subagent
+    additionalProperties: false
+    required:
+      - source
+    properties:
+      source:
+        type: string
+        description: short identifier of the origin (e.g. "learnn", "internal")
+      url:
+        type: string
+      notes:
+        type: string
+
+  entrypoint:
+    type: string
+    description: |
+      Relative path (from manifest) to the main subagent .md file, e.g.
+      `./automation-architect.md`.
+
+  tools:
+    type: array
+    description: |
+      Mirror of the subagent's declared `tools` from its frontmatter, for
+      quick scanning without opening the entrypoint.
+    items:
+      type: string
+
+  mcp_servers:
+    type: array
+    description: mirror of declared MCP server identifiers
+    items:
+      type: string
+
+  skills_dependencies:
+    type: array
+    description: |
+      Skill ids declared by the subagent frontmatter — used to build the
+      inverse dependency graph.
+    items:
+      type: string
+
+  memory:
+    type: string
+    enum:
+      - project
+      - none
+
+  created:
+    type: string
+    format: date
+    pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+
+  updated:
+    type: string
+    format: date
+    pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+
+  author:
+    type: string
+    minLength: 1

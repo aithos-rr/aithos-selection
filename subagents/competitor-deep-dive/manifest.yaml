@@ -1,0 +1,42 @@
+name: competitor-deep-dive
+version: 1.0.0
+type: subagent
+description: "Da 1-5 nomi competitor produce dossier strategico evidence-first (positioning + tone of voice misurabile + reviews sentiment grounded + tech +…"
+status: stable
+tags: [learnn, community-resource, analysis, competitor-research, marketing]
+language: it
+
+origin:
+  source: learnn
+  notes: "Public material from Learnn community courses, saved by Riccardo for future work reference."
+
+entrypoint: ./competitor-deep-dive.md
+
+tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - WebFetch
+  - WebSearch
+  - AskUserQuestion
+
+mcp_servers:
+  - apify
+  - playwright
+  - google-personal
+  - slack
+  - attio-mcp
+
+skills_dependencies:
+  - positioning-mapper
+  - tov-analyzer
+  - reviews-sentiment
+  - gap-finder
+  - dossier-writer
+
+memory: project
+
+created: 2026-05-16
+updated: 2026-05-16
+author: learnn

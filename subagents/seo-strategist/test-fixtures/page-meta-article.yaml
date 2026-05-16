@@ -1,0 +1,14 @@
+# Article schema metadata fixture
+title: "Ecommerce Analytics Guide 2026"
+description: "Guida completa all'analytics ecommerce 2026 con casi studio italiani."
+date_published: "2026-05-01T08:00:00+02:00"
+date_modified: "2026-05-01T08:00:00+02:00"
+author_name: "Mario Rossi"
+author_url: "https://example.com/author/filippo-greco"
+author_same_as:
+  - "https://www.linkedin.com/in/filippogreco/"
+  - "https://twitter.com/filippogreco"
+publisher_name: "Yellow Tech"
+publisher_logo_url: "https://example.com/logo.png"
+image_url: "https://example.com/img/cover.jpg"
+page_url: "https://example.com/blog/ecommerce-analytics-guide-2026"

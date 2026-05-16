@@ -115,6 +115,38 @@ class Manifest(_StrictModel):
     n8n_workflows: list[str] = []
 
 
+class SubagentOrigin(BaseModel):
+    """Origin metadata for a subagent — kept lenient at discovery time."""
+
+    model_config = ConfigDict(extra="allow")
+    source: str
+    url: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class SubagentManifest(BaseModel):
+    """Lenient subagent manifest model for discovery. Strict validation
+    lives in ``tools/check.py``."""
+
+    model_config = ConfigDict(extra="forbid")
+    name: str
+    version: str
+    type: str
+    description: str
+    status: str
+    tags: list[str] = []
+    language: str
+    origin: SubagentOrigin
+    entrypoint: str
+    tools: list[str] = []
+    mcp_servers: list[str] = []
+    skills_dependencies: list[str] = []
+    memory: Optional[str] = None
+    created: Union[date, str]
+    updated: Union[date, str]
+    author: str
+
+
 # ---------------------------------------------------------------------------
 # Discovery dataclasses
 # ---------------------------------------------------------------------------
@@ -171,6 +203,22 @@ class Reference:
     tags: list[str]
     description: str
     id: str
+
+
+@dataclass
+class Subagent:
+    path: str
+    name: str
+    status: str
+    tags: list[str]
+    description: str
+    language: str
+    origin_source: str
+    entrypoint: str
+    tools: list[str] = field(default_factory=list)
+    mcp_servers: list[str] = field(default_factory=list)
+    skills_dependencies: list[str] = field(default_factory=list)
+    memory: str = ""
 
 
 @dataclass
@@ -259,13 +307,17 @@ def discover_atoms_with_failures(
                 ParseFailure(_rel(p), f"{type(exc).__name__}: {exc}")
             )
 
-    # prompts/library/*.md
+    # prompts/library/*.md (single-file) and prompts/library/*/README.md (folder-as-prompt)
     lib = root / "prompts" / "library"
     if lib.is_dir():
         for p in sorted(lib.glob("*.md")):
             if p.name == "README.md":
                 continue
             _push_frontmatter_atom(p, "prompt")
+        for d in sorted(p for p in lib.iterdir() if p.is_dir()):
+            readme = d / "README.md"
+            if readme.is_file():
+                _push_frontmatter_atom(readme, "prompt")
 
     # prompts/templates/*.md
     tpl = root / "prompts" / "templates"
@@ -493,6 +545,59 @@ def discover_recipes_with_failures(
     return out, failures
 
 
+def discover_subagents(root: Path) -> list[Subagent]:
+    subs, _ = discover_subagents_with_failures(root)
+    return subs
+
+
+def discover_subagents_with_failures(
+    root: Path,
+) -> tuple[list[Subagent], list[ParseFailure]]:
+    failures: list[ParseFailure] = []
+    out: list[Subagent] = []
+    sub_root = root / "subagents"
+    if not sub_root.is_dir():
+        return out, failures
+    for m in sorted(sub_root.glob("*/manifest.yaml")):
+        try:
+            raw = yaml.safe_load(m.read_text(encoding="utf-8")) or {}
+            data = SubagentManifest(**raw)
+            if data.type != "subagent":
+                failures.append(
+                    ParseFailure(
+                        _rel(m),
+                        f"expected type=subagent, got {data.type!r}",
+                    )
+                )
+                continue
+            out.append(
+                Subagent(
+                    path=_rel(m.parent),
+                    name=data.name,
+                    status=data.status,
+                    tags=list(data.tags),
+                    description=data.description,
+                    language=data.language,
+                    origin_source=data.origin.source,
+                    entrypoint=data.entrypoint,
+                    tools=list(data.tools),
+                    mcp_servers=list(data.mcp_servers),
+                    skills_dependencies=list(data.skills_dependencies),
+                    memory=data.memory or "",
+                )
+            )
+        except ValidationError as exc:
+            failures.append(
+                ParseFailure(_rel(m), f"schema: {exc.error_count()} error(s)")
+            )
+        except Exception as exc:  # pragma: no cover — defensive
+            failures.append(
+                ParseFailure(_rel(m), f"{type(exc).__name__}: {exc}")
+            )
+    out.sort(key=lambda s: (s.name, s.path))
+    return out, failures
+
+
 _REFERENCE_SUBTYPES = ("repo", "article", "template")
 _REFERENCE_SUBTYPE_FROM_FOLDER = {
     "repos": "repo",
@@ -570,14 +675,19 @@ def build_inverse_graph(
     atoms: dict[str, list[Atom]],
     composites: list[Composite],
     recipes: list[Recipe],
+    subagents: Optional[list[Subagent]] = None,
 ) -> dict[str, list[str]]:
-    """Map every discovered atom path to the composites/recipes that
-    reference it. Atom paths that no manifest references end up with an
-    empty list (these are the orphans)."""
+    """Map every discovered atom path to the composites/recipes/subagents
+    that reference it. Atom paths that no manifest references end up with
+    an empty list (these are the orphans)."""
     graph: dict[str, list[str]] = {}
     for bucket in atoms.values():
         for a in bucket:
             graph.setdefault(a.path, [])
+
+    skill_id_to_path: dict[str, str] = {
+        a.name: a.path for a in atoms.get("skill", [])
+    }
 
     def _record(atom_path: str, user_path: str) -> None:
         if atom_path in graph and user_path not in graph[atom_path]:
@@ -602,6 +712,11 @@ def build_inverse_graph(
         ):
             for p in paths:
                 _record(p, r.path)
+    for s in subagents or []:
+        for skill_id in s.skills_dependencies:
+            skill_path = skill_id_to_path.get(skill_id)
+            if skill_path is not None:
+                _record(skill_path, s.path)
 
     for k in graph:
         graph[k] = sorted(graph[k])
@@ -646,6 +761,7 @@ def render_index(
     graph: dict[str, list[str]],
     timestamp: str,
     references: Optional[dict[str, list[Reference]]] = None,
+    subagents: Optional[list[Subagent]] = None,
 ) -> str:
     """Render the full INDEX.md contents (including the given timestamp)."""
     parts: list[str] = []
@@ -756,6 +872,36 @@ def render_index(
                     _trunc(c.description),
                 ]
                 for c in composites
+            ],
+        )
+    )
+    parts.append("")
+
+    # ---- Subagents ----
+    parts.append("## Subagents")
+    parts.append("")
+    parts.append(
+        _table(
+            [
+                "Name",
+                "Status",
+                "Origin",
+                "Tools (count)",
+                "MCP (count)",
+                "Skills (count)",
+                "Description",
+            ],
+            [
+                [
+                    s.name,
+                    s.status,
+                    s.origin_source,
+                    str(len(s.tools)),
+                    str(len(s.mcp_servers)),
+                    str(len(s.skills_dependencies)),
+                    _trunc(s.description),
+                ]
+                for s in (subagents or [])
             ],
         )
     )
@@ -899,7 +1045,8 @@ def _build_placeholder_content(
     composites, fc = discover_composites_with_failures(root)
     recipes, fr = discover_recipes_with_failures(root)
     references, fref = discover_references_with_failures(root)
-    graph = build_inverse_graph(atoms, composites, recipes)
+    subagents, fs = discover_subagents_with_failures(root)
+    graph = build_inverse_graph(atoms, composites, recipes, subagents)
     content = render_index(
         atoms,
         composites,
@@ -907,8 +1054,9 @@ def _build_placeholder_content(
         graph,
         TIMESTAMP_PLACEHOLDER,
         references=references,
+        subagents=subagents,
     )
-    return content, fa + fc + fr + fref
+    return content, fa + fc + fr + fref + fs
 
 
 def _resolve_timestamp(placeholder_content: str, existing_path: Path) -> str:

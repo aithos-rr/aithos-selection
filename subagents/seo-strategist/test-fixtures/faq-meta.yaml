@@ -1,0 +1,8 @@
+# FAQPage schema metadata fixture
+questions:
+  - question: "Cos'è il GEO (Generative Engine Optimization)?"
+    answer: "GEO è la pratica di ottimizzare content per essere citato da AI come ChatGPT, Perplexity, Claude e Gemini, oltre alle SERP Google tradizionali."
+  - question: "Quale tool serve per fare GEO nel 2026?"
+    answer: "Tool dedicati come Scrunch, LLMrefs, Profound o Quattr per tracking citation. Per esecuzione: schema markup + llms.txt + Q-format H2 + citation density."
+  - question: "Differenza tra GEO e SEO classico?"
+    answer: "SEO classico mira a posizionarsi nelle SERP Google. GEO mira a essere citato direttamente nelle risposte AI (ChatGPT, Perplexity). Entrambi sono complementari."

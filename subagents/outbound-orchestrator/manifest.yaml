@@ -1,0 +1,42 @@
+name: outbound-orchestrator
+version: 1.0.0
+type: subagent
+description: "Da output /lead-finder-pro (CSV/JSON enriched + scored A/B) a sequenza outbound multi-channel personalizzata via AI first-line, caricata su…"
+status: stable
+tags: [learnn, community-resource, sales, outbound, marketing]
+language: it
+
+origin:
+  source: learnn
+  notes: "Public material from Learnn community courses, saved by Riccardo for future work reference."
+
+entrypoint: ./outbound-orchestrator.md
+
+tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - WebFetch
+  - WebSearch
+  - AskUserQuestion
+
+mcp_servers:
+  - smartlead
+  - heyreach
+  - attio-mcp
+  - google-personal
+  - claude_ai_Gmail
+
+skills_dependencies:
+  - personalization-engine
+  - deliverability-check
+  - reply-classification
+  - sequence-builder
+  - gdpr-opt-out
+
+memory: project
+
+created: 2026-05-16
+updated: 2026-05-16
+author: learnn

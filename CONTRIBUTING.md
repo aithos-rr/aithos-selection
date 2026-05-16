@@ -55,6 +55,29 @@ Steps:
    with `-v2` (or higher) and mark the previous one as
    `status: deprecated`. See the *Updating an existing atom* section below.
 
+### Folder-as-prompt (prompts with companion assets)
+
+When a prompt needs companion assets (an image, a diagram, code samples), use
+the folder form instead of a single Markdown file:
+
+```
+prompts/library/<id>/
+├── README.md          # frontmatter + body, same shape as a single-file prompt
+└── prompt.jpg         # (or any companion files: images, snippets, etc.)
+```
+
+Rules:
+
+- The folder name is the prompt's `id` and must match the `id` field in
+  `README.md` frontmatter.
+- `README.md` carries the same frontmatter schema as a single-file prompt
+  (`type: prompt`, all required fields). Additional files in the folder are
+  not validated.
+- Both the single-file form and the folder form appear identically in
+  `INDEX.md` and are subject to the same duplicate-detection rules.
+- Use the folder form only when the prompt actually depends on a companion
+  asset; otherwise prefer the single-file form.
+
 ## Adding a new MCP server config
 
 MCP server configs live in `mcp-servers/` in their native JSON format. The
@@ -304,6 +327,121 @@ skill accepts three input modes — a single URL, a Markdown list of URLs
 plan, and only writes files after your explicit approval. Hand-rolling
 is fine for one-offs, but a batch is faster and more consistent through
 the skill.
+
+## Adding a subagent
+
+Subagents are Claude Code primitives, distinct from both skills and
+agents. Each subagent is an agent-like prompt that declares its own
+`tools`, `mcpServers`, and `skills` dependencies and is invoked as
+`/<subagent-name>` once deployed under `.claude/agents/` of a target
+project. They live in `subagents/`, one folder per subagent.
+
+**When to add a subagent vs a skill or agent.**
+
+- Use **`skill`** when the unit is a single capability with an
+  Anthropic-format `SKILL.md` whose frontmatter only needs `name` and
+  `description`. Skills do not declare tools or MCP servers at the
+  skill level.
+- Use **`agent`** when you are composing existing repo atoms (prompts,
+  MCP configs, tools) into a curated agent we author ourselves. The
+  manifest carries `system_prompt` and `uses.*` declarations.
+- Use **`subagent`** when the bundle is a Claude Code subagent — a
+  single entrypoint `.md` with `tools` / `mcpServers` / `skills` in its
+  frontmatter — invokable as a slash-command. Subagents often ship
+  with supporting material (`BUILD-BRIEF.md`, `ARCHITECTURE.md`,
+  `references/`, etc.) and may come from third-party sources.
+
+**Required structure.**
+
+```
+subagents/<name>/
+├── <name>.md             # entrypoint, Anthropic subagent format
+└── manifest.yaml         # Aithos-side manifest (this schema)
+```
+
+Optional, not validated but common: `BUILD-BRIEF.md`, `ARCHITECTURE.md`,
+`PROGRESS.md`, `README.md`, `references/`, `discovery/`, `research/`,
+`test-fixtures/`.
+
+**Inner entrypoint frontmatter (Anthropic format).** This goes at the
+top of `<name>.md`:
+
+```yaml
+---
+name: automation-architect
+description: From natural-language requirements to a production-grade
+  automation workflow created live in the user's platform.
+tools: Read, Write, Edit, Bash, WebFetch, WebSearch, Glob, AskUserQuestion
+mcpServers:
+  - n8n-knowledge
+  - context7
+skills:
+  - workflow-designer
+  - node-validator
+memory: project
+---
+```
+
+**Aithos-side `manifest.yaml`** (validated against
+`docs/schemas/subagent.schema.yaml`):
+
+```yaml
+name: automation-architect
+version: 1.0.0
+type: subagent
+description: From natural-language requirements to a production-grade
+  automation workflow created live in the user's platform.
+status: stable
+tags: [learnn, community-resource, automation, n8n, workflow]
+language: it
+
+origin:
+  source: learnn
+  url: https://learnn.com/template/...
+  notes: Public material from Learnn community courses, saved by
+    Riccardo for future work reference.
+
+entrypoint: ./automation-architect.md
+
+tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - WebFetch
+  - WebSearch
+  - Glob
+  - AskUserQuestion
+
+mcp_servers:
+  - n8n-knowledge
+  - context7
+
+skills_dependencies:
+  - workflow-designer
+  - node-validator
+
+memory: project
+
+created: 2026-05-16
+updated: 2026-05-16
+author: learnn
+```
+
+**Origin for third-party material.** When the subagent comes from a
+community source (e.g. Learnn courses), use `origin.source: learnn`
+and include the public URL and a short note. Author should reflect
+who created the material — set `author: learnn` (or the equivalent
+source) for community resources, and tag the manifest with both
+`learnn` (source identifier) and `community-resource` (third-party
+marker).
+
+The `entrypoint` is relative to the manifest. The `tools`,
+`mcp_servers`, and `skills_dependencies` fields mirror the entrypoint
+frontmatter so the catalogue can show counts without opening the
+entrypoint. Any id listed in `skills_dependencies` that matches an
+existing skill in `skills/` is recorded in the inverse dependency
+graph.
 
 ## Using the inbox
 

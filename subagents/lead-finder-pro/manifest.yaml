@@ -1,0 +1,45 @@
+name: lead-finder-pro
+version: 1.0.0
+type: subagent
+description: "Da definizione ICP a lista lead arricchiti scorati e segmentati, **pushati direttamente nel CRM dell'utente** (Attio / HubSpot / Pipedrive /…"
+status: stable
+tags: [learnn, community-resource, sales, lead-generation, crm]
+language: it
+
+origin:
+  source: learnn
+  notes: "Public material from Learnn community courses, saved by Riccardo for future work reference."
+
+entrypoint: ./lead-finder-pro.md
+
+tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - WebFetch
+  - WebSearch
+  - AskUserQuestion
+
+mcp_servers:
+  - hunter
+  - attio-mcp
+  - explorium
+  - smartlead
+  - heyreach
+  - google-personal
+  - playwright
+
+skills_dependencies:
+  - crm-adapter-generator
+  - icp-scoring
+  - email-verification
+  - gdpr-compliance
+  - waterfall-enrichment
+  - linkedin-safe-scraping
+
+memory: project
+
+created: 2026-05-16
+updated: 2026-05-16
+author: learnn

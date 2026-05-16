@@ -1,6 +1,6 @@
 ---
 name: librarian
-description: Process _inbox/ items by classifying them and proposing destinations with frontmatter or manifest. Bookmark external URLs into references/ (process-reference). Suggest workflows that could integrate a new atom. Propose coherent tags for a file. Use when the user mentions "process inbox", "process this URL", "bookmark this", "import my GitHub stars", "where does this go", "tag this file", "suggest workflows for", or when files are detected in _inbox/.
+description: Process _inbox/ items by classifying them as prompts, skills, agents, subagents, MCP configs, tools, stack notes, or references. Propose destinations with frontmatter or manifest. Bookmark external URLs into references/ (process-reference). Suggest workflows that could integrate a new atom. Propose coherent tags for a file. Use when the user mentions "process inbox", "process this URL", "bookmark this", "import my GitHub stars", "where does this go", "tag this file", "suggest workflows for", or when files are detected in _inbox/.
 ---
 
 # Librarian
@@ -65,9 +65,36 @@ Everything currently inside `_inbox/`, recursively. Ignore `.gitkeep` and
    | `tool-script`  | `tools/<name>.py` (or the appropriate extension)             |
    | `skill`        | `skills/<name>/SKILL.md`                                     |
    | `agent`        | `agents/<name>/` (requires `agent.md`, `manifest.yaml`, `README.md`) |
+   | `subagent`     | `subagents/<name>/` (requires the entrypoint `.md` + `manifest.yaml`) |
    | `workflow`     | `workflows/<name>/` (requires `flow.md`, `manifest.yaml`, `README.md`) |
    | `n8n-workflow` | `n8n-workflows/<name>.json` or `n8n-workflows/<name>/`       |
    | `unknown`      | keep in `_inbox/`, flag for the user                         |
+
+   **Skill vs agent vs subagent — the three-way distinction.** All three
+   are agent-shaped primitives but live in different folders:
+
+   - **`skill`** — Anthropic skill format. A folder with `SKILL.md` whose
+     frontmatter only needs `name` and `description`. No `tools` or
+     `mcpServers` declared at the skill level. Often ships with
+     `references/`, `scripts/`, `assets/`.
+   - **`agent`** — Aithos-internal declarative agent. A folder with
+     `agent.md` (system prompt), `manifest.yaml` (declares
+     `system_prompt`, `uses.prompts`, `uses.mcp_servers`, `uses.tools`),
+     and `README.md`. Used to compose existing atoms into a curated
+     agent we author ourselves.
+   - **`subagent`** — Claude Code subagent (Anthropic primitive,
+     invoked as `/<name>` and deployed to `.claude/agents/`). A folder
+     with an entrypoint `.md` file whose frontmatter declares `tools`,
+     `mcpServers`, optional `skills` dependencies and `memory`. The
+     Aithos-side `manifest.yaml` mirrors these for indexing. Often
+     ships with supporting material: `BUILD-BRIEF.md`,
+     `ARCHITECTURE.md`, `PROGRESS.md`, `references/`, `discovery/`,
+     `research/`, `test-fixtures/`.
+
+   When a zip extracts to `<name>/<name>.md` with `tools:` / `mcpServers:` in
+   its frontmatter, classify as **subagent**. When it extracts to
+   `<name>/SKILL.md`, classify as **skill**. When it has `agent.md`,
+   classify as **agent**.
 
 3. **Generate metadata.** For each classified candidate, draft:
    - The **proposed final path** (kebab-case stem matching the `id` / `name`

@@ -1,0 +1,20 @@
+{
+  "mailbox": "newsender@yourdomain.com",
+  "smartlead_id": 99999,
+  "warmup_active_days": 8,
+  "warmup_emails_sent_today": 5,
+  "warmup_emails_received_today": 3,
+  "domain": "yourdomain.com",
+  "spf_present": true,
+  "dkim_present": true,
+  "dmarc_policy": "none",
+  "expected_check_result": "BLOCK",
+  "expected_issues": [
+    "mailbox_age_8d_below_14d_minimum",
+    "dmarc_p_none_below_quarantine"
+  ],
+  "_meta": {
+    "fixture_type": "deliverability_check_negative",
+    "test_purpose": "Verify pre-flight blocks bulk send when mailbox <14d warmup AND DMARC p=none"
+  }
+}

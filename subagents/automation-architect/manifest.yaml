@@ -1,0 +1,43 @@
+name: automation-architect
+version: 1.0.0
+type: subagent
+description: "Da requisiti utente in linguaggio naturale (\"voglio quando arriva email X allora Y\") a workflow production-grade creato live nella tua automation…"
+status: stable
+tags: [learnn, community-resource, automation, n8n, workflow]
+language: it
+
+origin:
+  source: learnn
+  notes: "Public material from Learnn community courses, saved by Riccardo for future work reference."
+
+entrypoint: ./automation-architect.md
+
+tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - WebFetch
+  - WebSearch
+  - Glob
+  - AskUserQuestion
+
+mcp_servers:
+  - n8n-knowledge
+  - n8n-yellowtech
+  - context7
+  - parallel-cli
+
+skills_dependencies:
+  - platform-adapter-generator
+  - workflow-designer
+  - node-validator
+  - credential-mapper
+  - workflow-tester
+  - workflow-documenter
+
+memory: project
+
+created: 2026-05-16
+updated: 2026-05-16
+author: learnn

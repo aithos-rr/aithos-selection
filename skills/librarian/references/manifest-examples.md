@@ -125,3 +125,70 @@ Notes:
 - The companion `flow.md` and `README.md` in the workflow folder describe
   the human-readable steps and the purpose; they do not replace the
   manifest.
+
+## 4. Subagent manifest
+
+The Aithos-side `manifest.yaml` that sits alongside a Claude Code
+subagent's entrypoint. Schema:
+`/docs/schemas/subagent.schema.yaml`.
+
+File: `subagents/automation-architect/manifest.yaml`
+
+```yaml
+name: automation-architect
+version: 1.0.0
+type: subagent
+description: From natural-language requirements to a production-grade
+  automation workflow created live in the user's platform (n8n / Make /
+  Zapier / Pipedream / Workato).
+status: stable
+tags: [learnn, community-resource, automation, n8n, workflow]
+language: it
+
+origin:
+  source: learnn
+  notes: Public material from Learnn community courses, saved by
+    Riccardo for future work reference.
+
+entrypoint: ./automation-architect.md
+
+tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - WebFetch
+  - WebSearch
+  - Glob
+  - AskUserQuestion
+
+mcp_servers:
+  - n8n-knowledge
+  - context7
+  - parallel-cli
+
+skills_dependencies:
+  - workflow-designer
+  - node-validator
+  - credential-mapper
+  - workflow-tester
+  - workflow-documenter
+
+memory: project
+
+created: 2026-05-16
+updated: 2026-05-16
+author: learnn
+```
+
+Notes:
+
+- `entrypoint` is relative to the manifest — typically `./<name>.md`.
+- `tools`, `mcp_servers`, `skills_dependencies` mirror the entrypoint's
+  inner frontmatter so the index can show counts without opening the
+  entrypoint file.
+- `origin.source: learnn` plus the `learnn` and `community-resource`
+  tags mark third-party material curated for future reference.
+- `language: it` reflects the audience even if the body is bilingual.
+- `skills_dependencies` participates in the inverse dependency graph:
+  if any listed id matches a skill in `skills/`, the link is recorded.

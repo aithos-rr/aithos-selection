@@ -1,0 +1,16 @@
+# Product schema metadata fixture
+name: "Sneakers Modello Eclipse Donna"
+description: "Sneakers donna in pelle italiana, suola in gomma riciclata, made in Italy."
+sku: "ECL-DN-001"
+brand_name: "Eclipse Footwear"
+image_url: "https://example.com/img/sku-eclipse-1.jpg"
+images:
+  - "https://example.com/img/sku-eclipse-1.jpg"
+  - "https://example.com/img/sku-eclipse-2.jpg"
+  - "https://example.com/img/sku-eclipse-3.jpg"
+price: "89.90"
+currency: "EUR"
+availability: "https://schema.org/InStock"
+rating_value: "4.5"
+review_count: "127"
+page_url: "https://example.com/product/sneakers-eclipse-donna"
