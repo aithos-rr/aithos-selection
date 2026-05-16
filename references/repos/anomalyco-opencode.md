@@ -12,10 +12,10 @@ tags:
 language: en
 github_owner: anomalyco
 github_repo: anomalyco/opencode
-github_stars: 160832
+github_stars: 160862
 github_language: TypeScript
 github_topics: []
-github_last_commit: '2026-05-15'
+github_last_commit: '2026-05-16'
 created: '2026-05-16'
 updated: '2026-05-16'
 author: riccardo

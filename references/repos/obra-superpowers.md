@@ -12,7 +12,7 @@ tags:
 language: en
 github_owner: obra
 github_repo: obra/superpowers
-github_stars: 192743
+github_stars: 192832
 github_language: Shell
 github_topics: []
 github_last_commit: '2026-05-14'

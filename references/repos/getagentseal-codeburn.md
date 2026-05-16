@@ -17,7 +17,7 @@ tags:
 language: en
 github_owner: getagentseal
 github_repo: getagentseal/codeburn
-github_stars: 6511
+github_stars: 6517
 github_language: TypeScript
 github_topics:
 - ai-coding

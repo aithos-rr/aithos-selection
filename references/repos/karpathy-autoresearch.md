@@ -12,7 +12,7 @@ tags:
 language: en
 github_owner: karpathy
 github_repo: karpathy/autoresearch
-github_stars: 81258
+github_stars: 81270
 github_language: Python
 github_topics: []
 github_last_commit: '2026-03-26'

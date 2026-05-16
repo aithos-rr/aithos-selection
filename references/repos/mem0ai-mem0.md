@@ -16,7 +16,7 @@ tags:
 language: en
 github_owner: mem0ai
 github_repo: mem0ai/mem0
-github_stars: 55802
+github_stars: 55803
 github_language: Python
 github_topics:
 - agents
@@ -33,7 +33,7 @@ github_topics:
 - python
 - rag
 - state-management
-github_last_commit: '2026-05-15'
+github_last_commit: '2026-05-16'
 created: '2026-05-16'
 updated: '2026-05-16'
 author: riccardo

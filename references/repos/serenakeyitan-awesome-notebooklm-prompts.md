@@ -17,7 +17,7 @@ tags:
 language: en
 github_owner: serenakeyitan
 github_repo: serenakeyitan/awesome-notebookLM-prompts
-github_stars: 3212
+github_stars: 3219
 github_topics:
 - ai
 - ai-agents

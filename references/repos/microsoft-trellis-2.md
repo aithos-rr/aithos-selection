@@ -11,7 +11,7 @@ tags:
 language: en
 github_owner: microsoft
 github_repo: microsoft/TRELLIS.2
-github_stars: 6891
+github_stars: 6894
 github_language: Python
 github_topics: []
 github_last_commit: '2026-01-10'

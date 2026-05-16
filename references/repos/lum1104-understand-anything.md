@@ -19,7 +19,7 @@ tags:
 language: en
 github_owner: Lum1104
 github_repo: Lum1104/Understand-Anything
-github_stars: 14770
+github_stars: 14776
 github_language: TypeScript
 github_topics:
 - antigravity-skills

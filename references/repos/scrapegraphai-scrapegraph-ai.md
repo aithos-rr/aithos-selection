@@ -16,7 +16,7 @@ tags:
 language: en
 github_owner: ScrapeGraphAI
 github_repo: ScrapeGraphAI/Scrapegraph-ai
-github_stars: 25382
+github_stars: 25392
 github_language: Python
 github_topics:
 - ai-crawler

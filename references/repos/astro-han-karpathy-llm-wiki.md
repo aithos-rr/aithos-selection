@@ -17,7 +17,7 @@ tags:
 language: en
 github_owner: Astro-Han
 github_repo: Astro-Han/karpathy-llm-wiki
-github_stars: 835
+github_stars: 836
 github_topics:
 - agent-skill
 - claude-code

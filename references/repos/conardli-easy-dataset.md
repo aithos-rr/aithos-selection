@@ -16,7 +16,7 @@ tags:
 language: en
 github_owner: ConardLi
 github_repo: ConardLi/easy-dataset
-github_stars: 14254
+github_stars: 14255
 github_language: JavaScript
 github_topics:
 - dataset

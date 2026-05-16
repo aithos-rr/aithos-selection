@@ -19,7 +19,7 @@ tags:
 language: en
 github_owner: thedotmack
 github_repo: thedotmack/claude-mem
-github_stars: 75980
+github_stars: 75996
 github_language: TypeScript
 github_topics:
 - ai

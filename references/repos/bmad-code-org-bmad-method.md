@@ -11,7 +11,7 @@ tags:
 language: en
 github_owner: bmad-code-org
 github_repo: bmad-code-org/BMAD-METHOD
-github_stars: 47256
+github_stars: 47258
 github_language: JavaScript
 github_topics: []
 github_last_commit: '2026-05-13'

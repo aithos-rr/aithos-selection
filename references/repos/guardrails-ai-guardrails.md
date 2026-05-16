@@ -16,7 +16,7 @@ tags:
 language: en
 github_owner: guardrails-ai
 github_repo: guardrails-ai/guardrails
-github_stars: 6868
+github_stars: 6869
 github_language: Python
 github_topics:
 - ai

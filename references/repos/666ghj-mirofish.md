@@ -17,7 +17,7 @@ tags:
 language: en
 github_owner: 666ghj
 github_repo: 666ghj/MiroFish
-github_stars: 60816
+github_stars: 60825
 github_language: Python
 github_topics:
 - agent-memory

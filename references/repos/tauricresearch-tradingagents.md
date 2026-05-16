@@ -16,7 +16,7 @@ tags:
 language: en
 github_owner: TauricResearch
 github_repo: TauricResearch/TradingAgents
-github_stars: 75809
+github_stars: 75847
 github_language: Python
 github_topics:
 - agent

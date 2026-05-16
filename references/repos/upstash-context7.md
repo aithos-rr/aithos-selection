@@ -16,7 +16,7 @@ tags:
 language: en
 github_owner: upstash
 github_repo: upstash/context7
-github_stars: 55382
+github_stars: 55388
 github_language: TypeScript
 github_topics:
 - llm

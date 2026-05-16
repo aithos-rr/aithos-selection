@@ -16,7 +16,7 @@ tags:
 language: en
 github_owner: czlonkowski
 github_repo: czlonkowski/n8n-mcp
-github_stars: 20864
+github_stars: 20900
 github_language: TypeScript
 github_topics:
 - mcp

@@ -13,7 +13,7 @@ tags:
 language: en
 github_owner: musistudio
 github_repo: musistudio/claude-code-router
-github_stars: 34031
+github_stars: 34036
 github_language: TypeScript
 github_topics: []
 github_last_commit: '2026-03-04'

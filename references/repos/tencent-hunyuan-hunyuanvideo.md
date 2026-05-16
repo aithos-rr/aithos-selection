@@ -14,7 +14,7 @@ tags:
 language: en
 github_owner: Tencent-Hunyuan
 github_repo: Tencent-Hunyuan/HunyuanVideo
-github_stars: 12104
+github_stars: 12107
 github_language: Python
 github_topics:
 - diffusion-models

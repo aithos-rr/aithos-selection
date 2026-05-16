@@ -17,7 +17,7 @@ tags:
 language: en
 github_owner: hesamsheikh
 github_repo: hesamsheikh/octogent
-github_stars: 988
+github_stars: 990
 github_language: TypeScript
 github_topics:
 - agent-engineering

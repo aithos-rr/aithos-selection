@@ -18,7 +18,7 @@ tags:
 language: en
 github_owner: KeygraphHQ
 github_repo: KeygraphHQ/shannon
-github_stars: 42069
+github_stars: 42107
 github_language: TypeScript
 github_topics:
 - penetration-testing

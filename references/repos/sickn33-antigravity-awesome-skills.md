@@ -18,7 +18,7 @@ tags:
 language: en
 github_owner: sickn33
 github_repo: sickn33/antigravity-awesome-skills
-github_stars: 37625
+github_stars: 37634
 github_language: Python
 github_topics:
 - agent-skills

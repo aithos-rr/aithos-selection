@@ -18,7 +18,7 @@ github_repo: dimensionalOS/dimos
 github_stars: 3250
 github_language: Python
 github_topics: []
-github_last_commit: '2026-05-15'
+github_last_commit: '2026-05-16'
 created: '2026-05-16'
 updated: '2026-05-16'
 author: riccardo

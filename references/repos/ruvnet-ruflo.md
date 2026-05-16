@@ -19,7 +19,7 @@ tags:
 language: en
 github_owner: ruvnet
 github_repo: ruvnet/ruflo
-github_stars: 51522
+github_stars: 51561
 github_language: TypeScript
 github_topics:
 - agentic-ai
