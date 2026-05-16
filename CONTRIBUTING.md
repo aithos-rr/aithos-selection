@@ -526,3 +526,49 @@ the new one.
 
 When updating a manifest in `agents/` or `workflows/`, also bump the
 manifest's `version` field and the `updated` date.
+
+## Evening routine
+
+For hands-off batch maintenance, the `librarian` skill exposes a
+`nightly-sync` sub-flow that, in a single Claude Code session,
+processes anything new in `_inbox/` and delta-syncs your GitHub stars
+against `references/repos/` — then validates, commits, and pushes the
+result.
+
+Invoke it by natural language in Claude Code. Trigger phrases include
+"run nightly sync", "nightly sync", "evening routine",
+"process inbox and sync stars", and the Italian equivalents (e.g.
+"sync serale", "controlla l'inbox", "fai la routine serale").
+
+Pre-conditions:
+
+- You are on a feature branch (NOT `main`). Create one first if
+  needed: `git checkout -b feat/nightly-YYYY-MM-DD`.
+- The working tree is clean (anything inside `_inbox/` is fine — it's
+  gitignored).
+- `gh` is authenticated (the stars step needs network access; the
+  sub-flow degrades gracefully if it isn't).
+
+What it does:
+
+- Processes every classified entry in `_inbox/` deterministically
+  (skills, subagents, prompts, visual prompts), in auto-pilot.
+- Fetches your current GitHub stars and reconciles against
+  `references/repos/`: imports new ones; refreshes volatile metadata
+  (`github_stars`, `github_last_commit`, `updated`) on existing ones;
+  flags references whose repo you no longer star.
+- Runs `tools/generate_index.py` and `tools/check.py`. Aborts before
+  committing if validation fails.
+- Creates a single `chore(nightly-sync): …` commit and pushes it.
+
+What it does NOT do:
+
+- Install skills or subagents to runtime locations (use
+  `tools/install.py` for that).
+- Modify any user-edited frontmatter or body content on existing
+  references — only the three volatile fields are touched.
+- Delete references for repos you have unstarred. Unstarred entries
+  are flagged in the final report for you to handle manually.
+
+The detailed step-by-step is in
+[`skills/librarian/references/nightly-sync-runbook.md`](./skills/librarian/references/nightly-sync-runbook.md).

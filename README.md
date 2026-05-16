@@ -74,6 +74,10 @@ ask for what you need — adding a new prompt, drafting an agent, processing
 the inbox — and Claude will follow the invariants in `CLAUDE.md` and the
 guides in `CONTRIBUTING.md`.
 
+For evening maintenance — processing the inbox and syncing GitHub stars
+in one go — open a Claude Code session and say "run nightly sync". The
+librarian skill handles the rest.
+
 To browse what already exists, open `INDEX.md` (auto-generated in Phase 3).
 
 ## Folder map
