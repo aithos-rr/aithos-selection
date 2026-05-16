@@ -443,6 +443,56 @@ entrypoint. Any id listed in `skills_dependencies` that matches an
 existing skill in `skills/` is recorded in the inverse dependency
 graph.
 
+## Deploying skills and subagents
+
+This repository is the *catalog*. Claude Code looks for skills under
+`~/.claude/skills/` and for subagents under a project's
+`.claude/agents/`. To bridge the two, use `tools/install.py`:
+
+```bash
+# Install a skill globally (defaults to ~/.claude/skills/<name>)
+uv run python tools/install.py install skills/librarian
+
+# Install a subagent into a specific project (no global default)
+uv run python tools/install.py install subagents/automation-architect \
+    --target ~/projects/myclient/.claude/agents/automation-architect
+
+# Copy instead of symlink (use when the source path won't exist on the
+# target machine, e.g. shipping into a teammate's repo)
+uv run python tools/install.py install skills/humanizer --mode copy
+
+# Inspect an item before deciding
+uv run python tools/install.py info subagents/seo-strategist
+
+# List what's currently deployed
+uv run python tools/install.py list
+
+# Remove a deployment (by name, or by full target path if ambiguous)
+uv run python tools/install.py uninstall librarian
+```
+
+**Symlink vs copy.** `symlink` (the default) keeps this repo as the
+single source of truth: editing the file here immediately changes what
+Claude Code sees. Use `copy` when the deployment target is on a
+machine or filesystem where this repo's path won't resolve (e.g. a
+client's machine, a Docker image, a USB-mounted home dir).
+
+**Default targets.** Skills default to `~/.claude/skills/<name>` —
+that's where Claude Code looks for skills regardless of which project
+is open. Subagents have **no default** because they belong to a
+specific project's `.claude/agents/` folder; the script requires
+`--target` for subagents and exits with code 2 otherwise.
+
+**Install log.** Every deployment is recorded in
+`~/.aithos-install-log.yaml` (atomic writes; not tracked in git).
+`list` reads from it; `uninstall` reverses individual entries. If you
+manually delete a deployment, `list` flags the row as `missing` and
+`uninstall` will still clean up the log entry.
+
+**Idempotency.** Re-running `install` for the same source/target/mode
+is a no-op — useful for nightly resync flows that re-apply the full
+catalog on every run.
+
 ## Using the inbox
 
 `_inbox/` is the quick-dump zone for content you have not yet classified.
