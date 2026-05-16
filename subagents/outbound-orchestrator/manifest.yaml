@@ -1,7 +1,7 @@
 name: outbound-orchestrator
 version: 1.0.0
 type: subagent
-description: "Da output /lead-finder-pro (CSV/JSON enriched + scored A/B) a sequenza outbound multi-channel personalizzata via AI first-line, caricata su…"
+description: "Trasforma output di /lead-finder-pro in sequenze outbound multi-channel personalizzate via AI first-line, caricate su SmartLead / HeyReach con reply detection 5-class e auto-pause. Safety contract con dry-run default e confirm step oltre 50 lead."
 status: stable
 tags: [learnn, community-resource, sales, outbound, marketing]
 language: it

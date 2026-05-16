@@ -10,50 +10,53 @@ problem becomes a reusable ingredient for the next engagement.
 
 ## Mental model
 
-The repository encodes three layers of abstraction.
+The repository encodes five layers. The first four are content the repo
+*contains* and reuse each other through `manifest.yaml` declarations; the
+fifth points outward.
 
 **Atoms (ingredients).** Single-purpose, reusable units. Each atom lives in
-exactly one folder. Skills sit in `skills/`, prompts in `prompts/` (split
-between finished `library/` items and parametric `templates/`), MCP server
-configs in `mcp-servers/`, Python utilities in `tools/`, and tool-specific
-operational playbooks in `stack/`.
+exactly one folder. Skills sit in `skills/` (e.g. `humanizer`, the
+text-style cleanup skill), prompts in `prompts/` (split between finished
+`library/` items and parametric `templates/`), MCP server configs in
+`mcp-servers/`, Python utilities in `tools/` (e.g. `tools/install.py`),
+and tool-specific operational playbooks in `stack/`.
 
 **Composites.** Combinations of atoms that form a coherent unit but are not
-yet a full workflow. `agents/` is the main composite folder: each agent is a
-subfolder containing a system prompt (`agent.md`), a dependency manifest
-(`manifest.yaml`), and a `README.md`.
+yet a full workflow. `agents/` is the main composite folder: each agent is
+a subfolder with a system prompt (`agent.md`), a dependency manifest
+(`manifest.yaml`), and a `README.md`. Example: `agents/example-echo-agent/`.
 
-**Subagents.** A fifth layer sitting between composites and recipes.
-`subagents/` holds Claude Code subagents — Anthropic primitives that
-declare their own `tools`, `mcpServers`, and `skills` dependencies, and
-are invoked as slash-commands (`/<name>`) after being deployed under
-`.claude/agents/` in a target project. Each subagent is a self-contained
-folder with an entrypoint `.md` plus an Aithos-side `manifest.yaml` that
-mirrors the entrypoint frontmatter for indexing.
+**Subagents.** Claude Code subagent primitives (Anthropic format), invoked
+as `/<name>` once deployed under a project's `.claude/agents/`. Each
+subagent in `subagents/` is a self-contained bundle with an entrypoint
+`.md` declaring `tools`, `mcpServers`, and `skills` dependencies, plus an
+Aithos-side `manifest.yaml` that mirrors those fields for indexing.
+Example: `subagents/automation-architect/`.
 
 **Recipes.** Orchestrated workflows that solve a complete user-facing task.
 `workflows/` contains Claude/agent-based workflows that may delegate to n8n
-flows. `n8n-workflows/` holds standalone n8n exports that are not part of a
-Claude-orchestrated recipe.
+flows. `n8n-workflows/` holds standalone n8n exports that are not part of
+a Claude-orchestrated recipe.
 
-**References.** A fourth category, distinct from the three above. Atoms,
-composites, and recipes are content the repo *contains*; references are
-content the repo *points to*. `references/` holds curated bookmarks —
-GitHub repos in `repos/`, blog posts and papers in `articles/`, and
-external workflow or skill templates in `templates/`. References are
-never declared as `uses:` dependencies by composites or recipes; they
-are pure curation.
+**References.** Curated bookmarks to external resources — content the repo
+points to rather than contains. `references/` is split into `repos/`
+(GitHub repositories), `articles/` (blog posts, papers, documentation),
+and `templates/` (external n8n / skill / agent templates). References are
+never declared as `uses:` dependencies; they are pure curation.
 
-Atoms are referenced by composites and recipes through `manifest.yaml`, never
-by copying. See `PRD.md` for the strategic rationale and `CLAUDE.md` for the
-invariants every contributor (human or AI) must follow.
+Atoms are referenced by composites, subagents, and recipes through
+`manifest.yaml`, never by copying. See `PRD.md` for the strategic
+rationale and `CLAUDE.md` for the invariants every contributor (human or
+AI) must follow.
 
 ## How to use this repo
 
 For day-to-day contribution and editing rules, read
-[`CONTRIBUTING.md`](./CONTRIBUTING.md). It covers how to add new prompts, MCP
-configs, stack notes, agents, and workflows, plus how to use the `_inbox/`
-quick-dump zone.
+[`CONTRIBUTING.md`](./CONTRIBUTING.md). It covers how to add new prompts
+(single-file and folder-as-prompt), MCP configs, stack notes, agents,
+subagents, workflows, and references, plus how to deploy skills and
+subagents with `tools/install.py` and how to use the `_inbox/` quick-dump
+zone.
 
 For the strategic spec, read [`PRD.md`](./PRD.md).
 
@@ -78,7 +81,13 @@ For evening maintenance — processing the inbox and syncing GitHub stars
 in one go — open a Claude Code session and say "run nightly sync". The
 librarian skill handles the rest.
 
-To browse what already exists, open `INDEX.md` (auto-generated in Phase 3).
+To deploy a skill or subagent to its runtime location, use
+`uv run python tools/install.py install <path>` (symlink by default;
+`--mode copy` when the source path won't resolve at the target). See
+`CONTRIBUTING.md` → "Deploying skills and subagents".
+
+To browse what already exists, open `INDEX.md` (auto-generated by
+`tools/generate_index.py`).
 
 ## Folder map
 
@@ -107,5 +116,5 @@ To browse what already exists, open `INDEX.md` (auto-generated in Phase 3).
 │   ├── repos/               # GitHub repositories
 │   ├── articles/            # Blog posts, papers, documentation pages
 │   └── templates/           # External n8n / skill / agent templates
-└── tasks/                   # Phase specs for the bootstrap process
+└── tasks/                   # Archived bootstrap phase specs (see tasks/README.md)
 ```

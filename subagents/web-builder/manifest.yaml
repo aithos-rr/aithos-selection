@@ -1,7 +1,7 @@
 name: web-builder
 version: 1.0.0
 type: subagent
-description: "Da brief utente in linguaggio naturale a progetto web production-grade scaffoldato (Next.js 15 + Convex + Clerk + shadcn + Vercel) con CLAUDE.md…"
+description: "Trasforma un brief utente in linguaggio naturale in un progetto web production-grade scaffoldato (Next.js 15 + Convex + Clerk + shadcn + Vercel) con CLAUDE.md, componenti base, auth, database e deploy automation. Multi-template: SaaS micro, landing, internal tool, content, mobile stub."
 status: stable
 tags: [learnn, community-resource, engineering, nextjs, fullstack]
 language: it

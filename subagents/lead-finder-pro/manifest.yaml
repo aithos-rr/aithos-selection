@@ -1,7 +1,7 @@
 name: lead-finder-pro
 version: 1.0.0
 type: subagent
-description: "Da definizione ICP a lista lead arricchiti scorati e segmentati, **pushati direttamente nel CRM dell'utente** (Attio / HubSpot / Pipedrive /…"
+description: "Trasforma una definizione ICP in lead arricchiti, scorati e pushati nel CRM dell'utente (Attio, HubSpot, Pipedrive, Salesforce, Zoho, Notion, Airtable, custom). Waterfall enrichment multi-vendor con scoring 60/40 fit/behavior e EU GDPR detection."
 status: stable
 tags: [learnn, community-resource, sales, lead-generation, crm]
 language: it
