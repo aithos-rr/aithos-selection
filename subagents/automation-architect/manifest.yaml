@@ -1,7 +1,7 @@
 name: automation-architect
 version: 1.0.0
 type: subagent
-description: "Da requisiti utente in linguaggio naturale (\"voglio quando arriva email X allora Y\") a workflow production-grade creato live nella tua automation…"
+description: "Trasforma requisiti utente in linguaggio naturale in workflow di automation production-grade creati live nella platform dell'utente (n8n / Make / Zapier / Pipedream / Workato). Platform-agnostic via adapter generation dinamica."
 status: stable
 tags: [learnn, community-resource, automation, n8n, workflow]
 language: it

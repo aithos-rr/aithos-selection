@@ -1,7 +1,7 @@
 name: seo-strategist
 version: 1.0.0
 type: subagent
-description: "Da audit dominio + obiettivi business a strategia SEO+GEO 2026 actionable (keyword clustering, gap analysis content, schema markup, GEO optimization…"
+description: "Trasforma audit di dominio e obiettivi business in una strategia SEO+GEO 2026 actionable (keyword clustering, gap analysis, schema markup, GEO optimization per LLM citation, backlink, technical audit), con deliverable pronti per content team o agency."
 status: stable
 tags: [learnn, community-resource, seo, marketing, content-strategy]
 language: it

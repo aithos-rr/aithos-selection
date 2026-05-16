@@ -1,7 +1,7 @@
 name: competitor-deep-dive
 version: 1.0.0
 type: subagent
-description: "Da 1-5 nomi competitor produce dossier strategico evidence-first (positioning + tone of voice misurabile + reviews sentiment grounded + tech +…"
+description: "Produce dossier strategici evidence-first su 1-5 competitor (positioning, tone of voice misurabile, reviews sentiment, tech stack, funding) con citazioni verificabili e analisi cross-competitor."
 status: stable
 tags: [learnn, community-resource, analysis, competitor-research, marketing]
 language: it

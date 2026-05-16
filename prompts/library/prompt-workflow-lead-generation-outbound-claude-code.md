@@ -4,7 +4,7 @@ name: Prompt Workflow per lead generation e outbound con Claude Code
 type: prompt
 status: stable
 version: 1.0.0
-description: Workflow di prompt per lead generation e campagne outbound con Claude Code e skill GTM
+description: Sequenza di prompt e comandi skill per pipeline GTM completa con Claude Code — costruire una skill custom (`/skill-builder`), arricchire lead (`/lead-enrichment`), creare campagne outbound (`/outbound-campaign`) e analizzare trend competitor (`/trend-analysis`). Materiale del secondo webinar Claude Week di Learnn.
 tags: [workflow, claude-code, italian, lead-generation, outbound]
 language: it
 created: 2026-05-16

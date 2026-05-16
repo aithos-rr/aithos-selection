@@ -1,8 +1,8 @@
 # Project: Aithos Selection
 
 This repository is a curated knowledge base of AI primitives — prompts, skills,
-MCP server configs, agents, and workflows — used by Aithos for AI consulting
-work with SMEs.
+MCP server configs, agents, subagents, workflows, and curated references —
+used by Aithos for AI consulting work with SMEs.
 
 This file contains permanent invariants that you (Claude Code) must respect in
 every session. It is auto-loaded.
@@ -53,17 +53,25 @@ Conventional Commits format:
 
 Types: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`.
 
-Scope is the phase or component: `phase-1`, `phase-2`, `phase-3`, `phase-4`,
-`governance`, `librarian`, `index`, `check`.
+Scope identifies the phase or component touched. Bootstrap phases used the
+`phase-N` form (e.g. `phase-1`, `phase-2`, … `phase-5.2`, `phase-5.2-bis`,
+`phase-5.3`, `phase-5.4`, `phase-5.5`). Component scopes used during and
+after bootstrap include `governance`, `librarian`, `index`, `check`,
+`install`, `subagents`, `nightly-sync`. New ongoing work picks the scope
+that best describes the touched area; introduce a new scope only when none
+fits.
 
-Commit at the end of each phase as specified in the task file.
+Commit at the end of each phase or logical unit of work, as specified in
+the relevant task file (or — for ongoing work — when the change forms a
+self-contained whole).
 
 ## Branch policy
 
-- `main` — stable, manually reviewed. Never push directly during bootstrap.
-- `bootstrap` — the working branch during this initial buildout. All your
-  commits go here.
-- After bootstrap is merged, feature work uses `feat/<name>`, fixes `fix/<name>`.
+- `main` — stable, manually reviewed. Never push directly.
+- Feature work: `feat/<name>`. Fixes: `fix/<name>`. Chores: `chore/<name>`.
+  Docs: `docs/<name>`.
+- The bootstrap-era `bootstrap` branch is historical and no longer in use;
+  all bootstrap phase work has been merged.
 
 ## Folder structure
 
@@ -76,31 +84,44 @@ Commit at the end of each phase as specified in the task file.
 ├── README.md                # public-facing overview
 ├── _inbox/                  # quick dump zone (contents gitignored)
 ├── docs/                    # meta-docs about the repo itself
-│   └── schemas/             # YAML schemas for manifests and frontmatter
+│   └── schemas/             # YAML schemas for manifests, frontmatter, references, subagents
 ├── skills/                  # Claude Code skills (Anthropic format)
 ├── prompts/                 # prompt library
-│   ├── library/             # finished, versioned prompts
+│   ├── library/             # finished, versioned prompts (single-file or folder-as-prompt)
 │   └── templates/           # parametric templates
 ├── mcp-servers/             # MCP server configurations
-├── tools/                   # Python scripts, CLI utilities, plugins
+├── tools/                   # Python scripts (index, validator, install)
 ├── stack/                   # operational playbooks (one .md per tool)
 ├── agents/                  # agent definitions (system prompt + manifest)
+├── subagents/               # Claude Code subagents (entrypoint + manifest)
 ├── workflows/               # Claude/agent-based workflows
 ├── n8n-workflows/           # standalone n8n workflow exports
-└── tasks/                   # phase specs for bootstrap
+├── references/              # curated bookmarks (repos/, articles/, templates/)
+└── tasks/                   # task specs (active + archived bootstrap)
 ```
 
-## Execution rules during bootstrap
+## Execution rules
 
-- One phase per run. After completing a phase, commit, push, and stop.
-- Never proceed to the next phase without explicit user instruction.
-- Before each phase, re-read this file and the relevant `tasks/phase-N-*.md`.
+- One phase or one logical unit of work per session. After completing it,
+  commit, push, and stop.
+- Never proceed past the agreed scope without explicit user instruction.
+- Before starting a new task, re-read this file and the relevant task file
+  in `tasks/` (or `tasks/archive/` if referring to a completed bootstrap
+  phase).
 - If a task file conflicts with this file for invariants (rules, naming,
   conventions), this file wins. If it conflicts for execution details, the
   task file wins.
 
+## Bootstrap status
+
+Bootstrap (Phases 1–5.5) is complete. Ongoing intake of new content
+happens through the librarian skill's `nightly-sync` sub-flow (see
+`skills/librarian/SKILL.md` §5). Historical phase specs live in
+`tasks/archive/`.
+
 ## When in doubt
 
 - Read `PRD.md` for strategic context.
-- Read the current task file in `tasks/` for the specific spec.
+- Check `tasks/archive/` for the spec of any completed bootstrap phase
+  whose decisions are still relevant.
 - Ask the user before deviating from any spec. Do not improvise.

@@ -1,6 +1,6 @@
 ---
 name: humanizer
-description: "Humanize text: strip AI-isms and add real voice."
+description: "Humanize AI-written text by removing the 29 most common AI-isms (hedging, em-dashes, statistically-likely phrasing) and restoring real voice. Use when polishing drafts that read like generic LLM output — blog posts, PR descriptions, docs, emails, tweets — or to match a specific voice sample."
 version: 2.5.1
 author: Siqi Chen (@blader, https://github.com/blader/humanizer), ported by Hermes Agent
 license: MIT

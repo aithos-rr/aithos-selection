@@ -1,6 +1,6 @@
 ---
 name: remotion-best-practices
-description: Best practices for Remotion - Video creation in React
+description: Apply Remotion best practices when scaffolding, animating, or rendering programmatic videos in React. Use when writing or reviewing Remotion code — `useCurrentFrame`/`interpolate` animations, composition layout, audio/SFX, captions, transcoding — to follow the rules that prevent broken renders (no CSS animations, no Tailwind animation classes, correct asset loading via `staticFile()`).
 metadata:
   tags: remotion, video, react, animation, composition
 ---

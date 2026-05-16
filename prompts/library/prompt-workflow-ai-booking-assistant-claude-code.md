@@ -4,7 +4,7 @@ name: Prompt Workflow per creare un AI Booking Assistant con Claude Code
 type: prompt
 status: stable
 version: 1.0.0
-description: Workflow di prompt per costruire un AI Booking Assistant con Claude Code, Supabase, Vercel e n8n
+description: Sequenza cronologica di prompt per costruire passo-passo un AI Booking Assistant in Next.js 15 con Claude Code, Supabase, Vercel e n8n (live build del Yellow Tech Meeting Room Booking). Copia-incolla e personalizza per qualunque scenario di prenotazioni.
 tags: [workflow, claude-code, italian, booking, supabase]
 language: it
 created: 2026-05-16

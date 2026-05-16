@@ -77,9 +77,16 @@ applicable.
   `id: doc-extraction-v2`.
 - Folder `agents/agent-doc-analyst/` → `manifest.yaml` field
   `name: agent-doc-analyst`.
+- Folder `subagents/automation-architect/` → `manifest.yaml` field
+  `name: automation-architect`.
+- Folder-as-prompt `prompts/library/anatomy-of-claude-4-6-prompt/` →
+  the `README.md` inside must carry `id: anatomy-of-claude-4-6-prompt`
+  in its frontmatter (the folder name and the id are the same string).
+- Reference `references/repos/anthropics-anthropic-sdk-python.md` →
+  frontmatter `id: anthropics-anthropic-sdk-python`.
 
-A mismatch between file/folder name and identifier is a `check.py` error in
-Phase 4.
+A mismatch between file/folder name and identifier is a `tools/check.py`
+error.
 
 ## 3. Versioning
 
@@ -153,13 +160,16 @@ noun or a domain term with no clean English equivalent, keep Italian.
 
 ## 5. Branch names
 
-- `bootstrap` — the working branch during initial buildout.
 - `feat/<name>` — new features.
 - `fix/<name>` — bug fixes.
 - `chore/<name>` — chores, dependency bumps, formatting.
 - `docs/<name>` — documentation changes only.
 
-`<name>` itself is kebab-case (e.g. `feat/agent-doc-analyst`).
+`<name>` itself is kebab-case (e.g. `feat/agent-doc-analyst`,
+`feat/install-script`, `feat/nightly-sync`, `feat/coherence-check`).
+
+The bootstrap-era `bootstrap` branch is historical and no longer in use;
+all bootstrap phase work has been merged.
 
 ## 6. Commit messages
 
@@ -171,5 +181,10 @@ authoritative spec. Recap:
 ```
 
 Type ∈ {`feat`, `fix`, `chore`, `docs`, `refactor`, `test`}.
-Scope during bootstrap ∈ {`phase-1`, `phase-2`, `phase-3`, `phase-4`,
-`governance`, `librarian`, `index`, `check`}.
+
+Scope identifies the phase or component touched. Bootstrap phases used the
+`phase-N` form (`phase-1` through `phase-5.5`, including `phase-5.2-bis`);
+component scopes used during and after bootstrap include `governance`,
+`librarian`, `index`, `check`, `install`, `subagents`, `nightly-sync`.
+Pick the scope that best describes the touched area; introduce a new scope
+only when none fits.
