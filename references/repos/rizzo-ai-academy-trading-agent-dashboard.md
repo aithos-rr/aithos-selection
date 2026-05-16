@@ -4,7 +4,7 @@ name: trading_agent_dashboard
 type: reference
 subtype: repo
 url: 'https://github.com/Rizzo-AI-Academy/trading_agent_dashboard'
-status: active
+status: archived
 description: Trading Agent series
 tags:
 - python

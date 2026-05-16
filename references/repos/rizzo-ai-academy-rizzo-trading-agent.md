@@ -4,7 +4,7 @@ name: rizzo-trading-agent
 type: reference
 subtype: repo
 url: 'https://github.com/Rizzo-AI-Academy/rizzo-trading-agent'
-status: active
+status: archived
 description: Creo il mio Trading AI Agent
 tags:
 - python
