@@ -18,7 +18,7 @@ tags:
 language: en
 github_owner: teng-lin
 github_repo: teng-lin/notebooklm-py
-github_stars: 13303
+github_stars: 13306
 github_language: Python
 github_topics:
 - agentic-skill
@@ -35,7 +35,7 @@ github_topics:
 - python-api
 - sdk
 - skills
-github_last_commit: '2026-05-15'
+github_last_commit: '2026-05-16'
 created: '2026-05-16'
 updated: '2026-05-16'
 author: riccardo

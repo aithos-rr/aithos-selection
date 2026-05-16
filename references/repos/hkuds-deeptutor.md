@@ -16,7 +16,7 @@ tags:
 language: en
 github_owner: HKUDS
 github_repo: HKUDS/DeepTutor
-github_stars: 23986
+github_stars: 23988
 github_language: Python
 github_topics:
 - ai-agents

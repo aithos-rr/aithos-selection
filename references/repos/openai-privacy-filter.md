@@ -11,7 +11,7 @@ tags:
 language: en
 github_owner: openai
 github_repo: openai/privacy-filter
-github_stars: 2154
+github_stars: 2157
 github_language: Python
 github_topics: []
 github_last_commit: '2026-04-22'

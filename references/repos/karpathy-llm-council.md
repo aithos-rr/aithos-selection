@@ -11,7 +11,7 @@ tags:
 language: en
 github_owner: karpathy
 github_repo: karpathy/llm-council
-github_stars: 18787
+github_stars: 18789
 github_language: Python
 github_topics: []
 github_last_commit: '2025-11-22'

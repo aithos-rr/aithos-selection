@@ -16,7 +16,7 @@ tags:
 language: en
 github_owner: patchy631
 github_repo: patchy631/ai-engineering-hub
-github_stars: 35025
+github_stars: 35029
 github_language: Jupyter Notebook
 github_topics:
 - agents

@@ -12,7 +12,7 @@ tags:
 language: en
 github_owner: openai
 github_repo: openai/codex-plugin-cc
-github_stars: 18765
+github_stars: 18769
 github_language: JavaScript
 github_topics: []
 github_last_commit: '2026-04-18'

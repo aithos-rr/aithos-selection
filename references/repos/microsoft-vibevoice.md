@@ -11,7 +11,7 @@ tags:
 language: en
 github_owner: microsoft
 github_repo: microsoft/VibeVoice
-github_stars: 47148
+github_stars: 47149
 github_language: Python
 github_topics: []
 github_last_commit: '2026-05-06'

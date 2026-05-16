@@ -17,7 +17,7 @@ tags:
 language: en
 github_owner: VoltAgent
 github_repo: VoltAgent/awesome-design-md
-github_stars: 79314
+github_stars: 79348
 github_topics:
 - awesome-list
 - design-md

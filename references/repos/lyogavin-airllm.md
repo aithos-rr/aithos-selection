@@ -16,7 +16,7 @@ tags:
 language: en
 github_owner: lyogavin
 github_repo: lyogavin/airllm
-github_stars: 17955
+github_stars: 17957
 github_language: Jupyter Notebook
 github_topics:
 - chinese-llm

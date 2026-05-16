@@ -16,7 +16,7 @@ tags:
 language: en
 github_owner: HKUDS
 github_repo: HKUDS/LightRAG
-github_stars: 35246
+github_stars: 35249
 github_language: Python
 github_topics:
 - genai

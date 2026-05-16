@@ -18,7 +18,7 @@ tags:
 language: en
 github_owner: yichuan-w
 github_repo: yichuan-w/LEANN
-github_stars: 11034
+github_stars: 11045
 github_language: Python
 github_topics:
 - ai

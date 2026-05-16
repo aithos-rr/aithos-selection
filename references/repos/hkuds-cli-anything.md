@@ -12,7 +12,7 @@ tags:
 language: en
 github_owner: HKUDS
 github_repo: HKUDS/CLI-Anything
-github_stars: 34822
+github_stars: 34868
 github_language: Python
 github_topics: []
 github_last_commit: '2026-05-14'

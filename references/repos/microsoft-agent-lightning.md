@@ -16,7 +16,7 @@ tags:
 language: en
 github_owner: microsoft
 github_repo: microsoft/agent-lightning
-github_stars: 17185
+github_stars: 17184
 github_language: Python
 github_topics:
 - agent

@@ -17,7 +17,7 @@ tags:
 language: en
 github_owner: JuliusBrussee
 github_repo: JuliusBrussee/caveman
-github_stars: 60719
+github_stars: 60738
 github_language: JavaScript
 github_topics:
 - ai

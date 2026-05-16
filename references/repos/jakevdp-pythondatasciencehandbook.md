@@ -16,7 +16,7 @@ tags:
 language: en
 github_owner: jakevdp
 github_repo: jakevdp/PythonDataScienceHandbook
-github_stars: 48089
+github_stars: 48090
 github_language: Jupyter Notebook
 github_topics:
 - jupyter-notebook

@@ -13,7 +13,7 @@ tags:
 language: en
 github_owner: snarktank
 github_repo: snarktank/ralph
-github_stars: 19120
+github_stars: 19121
 github_language: TypeScript
 github_topics: []
 github_last_commit: '2026-02-02'

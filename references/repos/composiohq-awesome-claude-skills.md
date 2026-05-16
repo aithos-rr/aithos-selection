@@ -17,7 +17,7 @@ tags:
 language: en
 github_owner: ComposioHQ
 github_repo: ComposioHQ/awesome-claude-skills
-github_stars: 60000
+github_stars: 60007
 github_language: Python
 github_topics:
 - agent-skills

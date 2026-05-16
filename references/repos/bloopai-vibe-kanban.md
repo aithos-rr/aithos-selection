@@ -16,7 +16,7 @@ tags:
 language: en
 github_owner: BloopAI
 github_repo: BloopAI/vibe-kanban
-github_stars: 26269
+github_stars: 26272
 github_language: Rust
 github_topics:
 - agent

@@ -17,7 +17,7 @@ tags:
 language: en
 github_owner: kepano
 github_repo: kepano/obsidian-skills
-github_stars: 31460
+github_stars: 31470
 github_topics:
 - claude
 - clawdbot

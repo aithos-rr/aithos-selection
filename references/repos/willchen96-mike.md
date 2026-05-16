@@ -11,7 +11,7 @@ tags:
 language: en
 github_owner: willchen96
 github_repo: willchen96/mike
-github_stars: 3009
+github_stars: 3014
 github_language: TypeScript
 github_topics: []
 github_last_commit: '2026-05-15'

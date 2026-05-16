@@ -19,7 +19,7 @@ tags:
 language: en
 github_owner: jackwener
 github_repo: jackwener/OpenCLI
-github_stars: 20698
+github_stars: 20703
 github_language: JavaScript
 github_topics:
 - ai-agent

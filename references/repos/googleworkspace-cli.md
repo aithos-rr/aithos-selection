@@ -18,7 +18,7 @@ tags:
 language: en
 github_owner: googleworkspace
 github_repo: googleworkspace/cli
-github_stars: 26255
+github_stars: 26260
 github_language: Rust
 github_topics:
 - agent-skills

@@ -17,7 +17,7 @@ tags:
 language: en
 github_owner: D4Vinci
 github_repo: D4Vinci/Scrapling
-github_stars: 49922
+github_stars: 49972
 github_language: Python
 github_topics:
 - ai
@@ -40,7 +40,7 @@ github_topics:
 - web-scraping-python
 - webscraping
 - xpath
-github_last_commit: '2026-05-11'
+github_last_commit: '2026-05-16'
 created: '2026-05-16'
 updated: '2026-05-16'
 author: riccardo

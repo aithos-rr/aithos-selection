@@ -17,7 +17,7 @@ tags:
 language: en
 github_owner: aiming-lab
 github_repo: aiming-lab/AutoResearchClaw
-github_stars: 12192
+github_stars: 12194
 github_language: Python
 github_topics:
 - autonomous-research

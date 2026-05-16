@@ -17,14 +17,14 @@ tags:
 language: en
 github_owner: gsd-build
 github_repo: gsd-build/get-shit-done
-github_stars: 62457
+github_stars: 62471
 github_language: JavaScript
 github_topics:
 - claude-code
 - context-engineering
 - meta-prompting
 - spec-driven-development
-github_last_commit: '2026-05-15'
+github_last_commit: '2026-05-16'
 created: '2026-05-16'
 updated: '2026-05-16'
 author: riccardo
