@@ -96,3 +96,9 @@ ENV PATH="/home/node/.local/bin:${PATH}"
 
 # --- AI-Lab addition: Railway CLI (auth via RAILWAY_API_TOKEN env, no login per project) ---
 RUN npm install -g @railway/cli
+
+# --- AI-Lab addition: tmux for long-running loops (survive closing VS Code) ---
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends tmux \
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
+USER node
