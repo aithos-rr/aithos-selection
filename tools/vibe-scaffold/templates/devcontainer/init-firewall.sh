@@ -14,6 +14,13 @@ iptables -t mangle -F
 iptables -t mangle -X
 ipset destroy allowed-domains 2>/dev/null || true
 
+# Reset default policies to ACCEPT so the script is re-runnable
+# (un run precedente lascia DROP; con regole flushate e ipset distrutto,
+#  il curl dello script stesso verso api.github.com verrebbe bloccato e set -e lo ucciderebbe)
+iptables -P INPUT ACCEPT
+iptables -P FORWARD ACCEPT
+iptables -P OUTPUT ACCEPT
+
 # 2. Selectively restore ONLY internal Docker DNS resolution
 if [ -n "$DOCKER_DNS_RULES" ]; then
     echo "Restoring Docker DNS rules..."
