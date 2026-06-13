@@ -3,6 +3,7 @@
 set -uo pipefail
 
 MAX_ITERATIONS="${1:-25}"
+MODEL="${RALPH_MODEL:-sonnet}"
 MARKER_DONE="RALPH_COMPLETE"
 MARKER_BLOCKED="RALPH_BLOCKED"
 STALL_LIMIT=3
@@ -25,6 +26,7 @@ for i in $(seq 1 "$MAX_ITERATIONS"); do
   head_before=$(git rev-parse HEAD 2>/dev/null || echo none)
 
   output=$(claude -p "$(cat PROMPT.md)" \
+      --model "$MODEL" \
       --dangerously-skip-permissions \
       --output-format text 2>&1 | tee "progress/iteration-$i.log")
 
