@@ -22,6 +22,7 @@ stall=0
 
 for i in $(seq 1 "$MAX_ITERATIONS"); do
   echo "════ Ralph iteration $i/$MAX_ITERATIONS — $(date -Is) ════"
+  head_before=$(git rev-parse HEAD 2>/dev/null || echo none)
 
   output=$(claude -p "$(cat PROMPT.md)" \
       --dangerously-skip-permissions \
@@ -29,12 +30,15 @@ for i in $(seq 1 "$MAX_ITERATIONS"); do
 
   # Commit di sicurezza se l'agente non ha committato
   git add -A >/dev/null 2>&1
-  if git diff --cached --quiet; then
+  if ! git diff --cached --quiet; then
+    git commit -m "ralph: iteration $i (auto)" --no-verify >/dev/null 2>&1 || true
+  fi
+  head_after=$(git rev-parse HEAD 2>/dev/null || echo none)
+  if [ "$head_after" = "$head_before" ]; then
     stall=$((stall + 1))
-    echo "── no changes this iteration (stall $stall/$STALL_LIMIT)"
+    echo "── no progress this iteration (stall $stall/$STALL_LIMIT)"
   else
     stall=0
-    git commit -m "ralph: iteration $i (auto)" --no-verify >/dev/null 2>&1 || true
   fi
 
   if grep -q "$MARKER_DONE" <<< "$output"; then
