@@ -66,8 +66,11 @@ Map stories to tasks, in executable order:
 
 Rules: tasks small and independent where possible; the first tasks set up the
 project skeleton, tooling, and the test harness (the loop's feedback quality
-depends on it); the last task is always a full verification pass + Railway
-deploy check if in scope.
+depends on it). The LAST task is ALWAYS a real-service smoke-test: an end-to-end
+run against REAL services (live API, real DB — never mocks), plus a Railway
+deploy check if in scope. This is non-negotiable: mock tests pass while real
+bugs survive — they only surface against real services. The PRD is not
+loop-ready without this final task.
 
 ## Phase 4 — Final review
 
